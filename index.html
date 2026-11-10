@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+
+<title>Brand Building to Performance Ratio Calculator</title>
+<meta name="description" content="Free interactive tool: split your media budget between brand building and performance using your category's in-market buyer share (based on John Dawes' 95:5 rule and the 60:40 principle by Les Binet &amp; Peter Field). Built by Anand Aravamudhan.">
+<meta name="author" content="Anand Aravamudhan">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Brand Building to Performance Ratio Calculator">
+<meta property="og:description" content="How much of your market is shopping now, and how much is buying later? Enter your category numbers and get a brand building vs performance split in seconds.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column, three numbered steps — 1 understand the buyers, 2 enter the numbers, 3 run and read the simulation. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #0f1419;
+  --ink-2: #48515e;
+  --ink-3: #737d8c;
+  --line: #dde2e9;
+  --line-soft: #ebeef2;
+  --control: #1c5cab;
+  --national: #2a78d6;
+  --instore: #eb6834;
+  --brand: #1baf7a;
+  --band: #fdeee6;
+  --band-blue: #e4eefb;
+  --nonbuyer: #e3e7ed;
+  --nonbuyer-ring: #c4cbd5;
+  --warn-bg: #fff6e0;
+  --warn-ink: #6b4a00;
+  --err: #b42318;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --surface: #191c21; --ink: #eef0f3; --ink-2: #b6bdc8; --ink-3: #8a94a3;
+    --line: #2c3139; --line-soft: #23272d; --control: #6da7ec;
+    --national: #3987e5; --instore: #d95926; --brand: #199e70; --band: #3a2419; --band-blue: #172a42;
+    --nonbuyer: #2a2f36; --nonbuyer-ring: #444b55; --warn-bg: #2e2612; --warn-ink: #f3d48a; --err: #f97066;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #191c21; --ink: #eef0f3; --ink-2: #b6bdc8; --ink-3: #8a94a3;
+  --line: #2c3139; --line-soft: #23272d; --control: #6da7ec;
+  --national: #3987e5; --instore: #d95926; --brand: #199e70; --band: #3a2419; --band-blue: #172a42;
+  --nonbuyer: #2a2f36; --nonbuyer-ring: #444b55; --warn-bg: #2e2612; --warn-ink: #f3d48a; --err: #f97066;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+body { position: relative; }
+
+/* Background: one budget, two jobs. A "$" at the top splits into an Awareness stream (blue, left)
+   and a Purchase stream (orange, right) that run down the margins and rejoin as growth at the bottom. */
+#flowBg { position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
+#flowBg svg { display: block; width: 100%; height: 100%; }
+.wrap { position: relative; z-index: 1; }
+@media print { #flowBg { display: none; } }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 40px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 3.6vw, 38px); line-height: 1.1; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 20px; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+h3 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+.lede { color: var(--ink-2); max-width: 66ch; margin: 8px 0 0; font-size: 16px; }
+.byline { margin: 10px 0 0; font-size: 13.5px; color: var(--ink-3); }
+.byline strong { color: var(--ink-2); font-weight: 600; }
+.byline { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.li-link { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--control); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+.li-link svg { width: 13px; height: 13px; }
+.li-link:hover { border-color: var(--control); }
+.li-link:focus-visible { outline: 2px solid var(--control); outline-offset: 2px; }
+.sitefoot a { color: var(--control); }
+.sitefoot { border-top: 1px solid var(--line); padding-top: 18px; font-size: 13px; color: var(--ink-3); display: flex; flex-direction: column; gap: 4px; }
+.sitefoot p { margin: 0; max-width: 78ch; }
+.sitefoot strong { color: var(--ink-2); }
+.tool-eyebrow { margin: 0 0 -28px; padding-top: 30px; border-top: 2px solid var(--line); text-align: center; font: 700 11.5px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+/* Sector table (Principle 2) */
+.sx-wrap { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 10px; }
+.sx-lead { margin: 0; font-size: 15px; color: var(--ink-2); max-width: 72ch; }
+.sx-lead span { color: var(--ink); font-weight: 600; }
+.sx { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sx th, .sx td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+.sx thead th { font-size: 12px; font-weight: 600; color: var(--ink-3); border-bottom: 1px solid var(--line); }
+.sx tbody th { font: 500 14px var(--f-body); text-transform: none; letter-spacing: 0; color: var(--ink); white-space: nowrap; }
+.sx td:nth-child(2) { width: 42%; }
+.sx-bar { display: block; height: 10px; border-radius: 5px; background: linear-gradient(to right, var(--national) 0 calc(var(--p) * 100%), var(--instore) calc(var(--p) * 100%) 100%); opacity: .85; }
+.sx-r { font: 600 14px var(--f-mono); white-space: nowrap; text-align: right; }
+.sx-r .c { color: var(--ink-3); } .sx-r .nbb { color: var(--national); } .sx-r .npf { color: var(--instore); }
+.sx-src { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sx tr.on th, .sx tr.on td { background: color-mix(in srgb, #f2b33d 18%, transparent); box-shadow: inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); }
+.sx tr.on th { font-weight: 700; box-shadow: inset 2px 0 0 var(--ink), inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); border-radius: 8px 0 0 8px; }
+.sx tr.on td:last-child { box-shadow: inset -2px 0 0 var(--ink), inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); border-radius: 0 8px 8px 0; }
+.sx tr.on th::after { content: "Your sector"; display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; background: var(--ink); color: var(--bg); font: 700 10.5px var(--f-body); letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; }
+@media (prefers-reduced-motion: no-preference) { .sx tr th, .sx tr td { transition: background-color .25s, box-shadow .25s; } }
+.sx tr.on .sx-bar { opacity: 1; height: 14px; }
+.sx-note { margin: 0; font-size: 12.5px; color: var(--ink-3); max-width: 90ch; }
+@media (max-width: 640px) { .sx td:nth-child(2), .sx th:nth-child(2) { display: none; } .sx-src { display: none; } .sx tbody th { white-space: normal; } .sx tr.on td.sx-r { box-shadow: inset -2px 0 0 var(--ink), inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); border-radius: 0 8px 8px 0; } }
+#tGhost { transition: opacity .5s ease; } #tGhost:not(.in) { opacity: 0 !important; }
+#tArrow path { stroke-dasharray: 700; stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  #tArrow:not(.draw) path { stroke-dashoffset: 700; }
+  #tArrow.draw path { animation: tDraw .8s ease-out both; }
+  @keyframes tDraw { from { stroke-dashoffset: 700; } to { stroke-dashoffset: 0; } }
+}
+.tsaw { margin: 26px auto 22px; max-width: 760px; width: 100%; display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 20px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line-soft); box-sizing: border-box; }
+.tsaw-eb { text-align: center; }
+.tsaw svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tsaw-axis { margin: 0 auto; }
+#gapMsg .gm-loop { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin-top: 16px; font: 400 14px var(--f-body); }
+#gapMsg .gl-s { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: #1f2b40; border: 1px solid #33425c; color: #fff; font-weight: 700; min-width: 140px; flex: 1; }
+#gapMsg .gl-s em { font-style: normal; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #f2b33d; color: #1d1405; font-size: 12px; margin-bottom: 4px; }
+#gapMsg .gl-s small { font-weight: 500; font-size: 12.5px; color: #c9d2de; }
+#gapMsg .gl-a { align-self: center; color: #8b97a8; font-weight: 700; }
+#gapMsg .gl-back { align-self: center; color: #f2b33d; font-size: 22px; font-weight: 700; }
+@media (max-width: 640px) { .lad-step b { font-size: 12.5px; } .lad-pin { font-size: 9.5px; } #gapMsg .gl-a, #gapMsg .gl-back { display: none; } #gapMsg .gl-s { min-width: 100%; } }
+/* Principles vs. tool: principles sit in warm "read this" panels; the tool stays on the cool page with white cards */
+.principle { position: relative; background: #f7f2e8; border: 1px solid #e8dcc6; border-radius: 20px; padding: 22px 24px 26px; gap: 18px; }
+.principle .card { box-shadow: 0 1px 0 rgba(120, 90, 30, .06); }
+.pr-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding-bottom: 14px; border-bottom: 1px solid #e8dcc6; }
+.pr-num { font: 700 11.5px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: #8a6a2e; }
+.principle .ptag { background: #fff; }
+.pr-det > summary { cursor: pointer; list-style: none; position: relative; padding-right: 60px; }
+.pr-det > summary::-webkit-details-marker { display: none; }
+.pr-det:not([open]) > summary { border-bottom: 0; padding-bottom: 0; }
+.pr-det[open] > summary { margin-bottom: 18px; }
+.pr-det[open] > summary .tog { top: calc(50% - 7px); }
+.pr-det .tog { position: absolute; right: 0; top: 50%; transform: translateY(-50%); flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); box-shadow: 0 3px 10px rgba(15, 23, 42, .22); transition: transform .2s ease, background-color .2s ease; }
+.pr-det .tog::after { content: "+"; font: 700 28px/1 var(--f-display); margin-top: -2px; }
+.pr-det[open] .tog::after { content: "−"; }
+.pr-det .tog .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pr-det[open] .pr-tease { display: none; }
+.pr-tease { flex-basis: 100%; margin-top: 4px; font: 700 clamp(17px, 2vw, 20px)/1.3 var(--f-display); color: var(--ink); text-wrap: balance; }
+.pr-det > summary:hover .tog { background: #f2b33d; color: #0f172a; transform: translateY(-50%) scale(1.06); }
+.bridge-q .bigq { margin-top: 0; padding-top: 0; border-top: 0; }
+.bigq.hdr-q { margin-top: 22px; padding-top: 0; border-top: 0; }
+@media (max-width: 640px) { .principle { padding: 16px 14px 18px; border-radius: 16px; } }
+@media (prefers-color-scheme: dark) {
+  .principle { background: #1f1b14; border-color: #3a3122; }
+  .pr-head { border-bottom-color: #3a3122; }
+  .pr-num { color: #d7b26b; }
+}
+/* Principle tags: mark where each rule is introduced or applied */
+.ptag { display: inline-flex; align-items: center; gap: 7px; padding: 2px 9px 2px 2px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface, #fff); font: 600 12px var(--f-body); letter-spacing: 0; text-transform: none; color: var(--ink-2); white-space: nowrap; vertical-align: middle; cursor: help; }
+.ptag b { font: 700 11.5px var(--f-mono); color: var(--bg); background: var(--ink); border-radius: 4px; padding: 2px 6px; }
+.ptag-row { margin: 0 0 8px; }
+#whyNote .ptag-row { margin: 0 0 -4px; }
+.pq-pop { display: flex; align-items: center; gap: 14px; margin: 18px 0 4px; padding: 16px 20px; background: #0f172a; border-radius: 14px; box-shadow: 0 6px 20px rgba(15, 23, 42, .18); }
+.step-head .pq-pop p.pq-q { margin: 0; max-width: none; font: 800 clamp(20px, 2.6vw, 28px)/1.25 var(--f-display); color: #ffffff; letter-spacing: -.01em; text-wrap: balance; }
+.step-head .pq-pop.pq-s2 { margin: 0 0 16px; }
+@media (prefers-color-scheme: dark) { .pq-pop { background: #1e293b; border: 1px solid #334155; } }
+.pq-mark { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #f2b33d; color: #0f172a; font: 800 24px var(--f-display); }
+@media (max-width: 640px) { .pq-pop { padding: 14px 16px; gap: 12px; } .pq-mark { width: 32px; height: 32px; font-size: 19px; } }
+.hook { margin: 22px 0 0; padding: 4px 0 4px 18px; border-left: 4px solid #f2b33d; max-width: 62ch; }
+.hook-q { margin: 0; font: 800 clamp(22px, 2.8vw, 30px)/1.25 var(--f-display); color: var(--ink); letter-spacing: -.01em; text-wrap: balance; }
+.hook-sub { margin: 8px 0 0; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+.hook-sub .c-in, .hook-sub .c-out { font-weight: 600; white-space: nowrap; }
+.hdr-ptags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 8px 0 6px; }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.sub { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; max-width: 70ch; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1.5px solid; white-space: nowrap; color: var(--ink); }
+.pill.in { border-color: var(--instore); }
+.pill.out { border-color: var(--national); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+
+/* Step headers */
+.step { display: flex; flex-direction: column; gap: 16px; }
+.step-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 4px 14px; align-items: start; }
+.step-head.nonum { grid-template-columns: minmax(0, 1fr); }
+.budgetbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; padding-left: 54px; }
+@media (max-width: 420px) { .budgetbar { padding-left: 0; } }
+.budgetbar label.f { width: min(100%, 260px); }
+.budgetbar .hint { padding-bottom: 10px; }
+.step-num { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--bg); font: 600 15px var(--f-mono); display: grid; place-items: center; }
+.step-head h2 { font-size: 24px; margin: 2px 0 2px; }
+.step-head p { margin: 0; color: var(--ink-2); font-size: 14.5px; max-width: 70ch; }
+.step-head p.s1-lead { font-size: 16px; color: var(--ink); margin-top: 6px; }
+.s1-tips { margin: 14px 0 6px; display: grid; gap: 8px; max-width: 70ch; }
+.s1-tips > div { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; padding-left: 12px; border-left: 3px solid var(--line); }
+.s1-tips dt { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); padding-top: 2px; }
+.s1-tips dd { margin: 0; font-size: 14.5px; color: var(--ink-2); line-height: 1.5; }
+@media (max-width: 640px) { .s1-tips > div { grid-template-columns: 1fr; gap: 2px; } }
+.step-head h2.dawes-quote { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; font-weight: 500; max-width: 46ch; margin: 0 0 8px; text-wrap: pretty; }
+.step-head h2.dawes-quote { max-width: none; font-size: clamp(19px, 2.1vw, 23px); }
+.dawes-quote .ql { display: block; }
+.dawes-quote .ql + .ql { margin-top: 6px; }
+.qtag { display: inline-block; vertical-align: middle; margin: 0 2px; padding: 3px 10px; border-radius: 999px; border: 1.5px solid; font: 600 13px var(--f-body); letter-spacing: 0; color: var(--ink); white-space: nowrap; position: relative; top: -2px; }
+.qtag.out { border-color: var(--national); background: var(--band-blue); }
+.qtag.in { border-color: var(--instore); background: var(--band); }
+.step-head p.dawes-attr { font-size: 13px; color: var(--ink-3); max-width: none; }
+.step-head p.lead-fact { margin-top: 14px; font-size: 16px; color: var(--ink-2); max-width: 72ch; }
+table.jobs thead th.leadin { font: 600 13px var(--f-body); color: var(--ink-2); letter-spacing: 0; text-transform: none; line-height: 1.35; }
+.colhead .colsub { font: 500 13px var(--f-body); color: var(--ink-2); }
+.so-line { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font: 700 17px var(--f-display); color: var(--ink); text-wrap: balance; }
+.bridge .so-line { font-size: 19px; }
+
+/* The big question (end of intro) and "Think about it" prompts at each step */
+.bigq { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.bigq-q { margin: 0; font: 700 clamp(19px, 2.2vw, 24px)/1.3 var(--f-display); color: var(--ink); text-wrap: balance; }
+.bigq-opts { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.opt { border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; border: 1.5px solid; }
+.opt.out { border-color: var(--national); background: color-mix(in srgb, var(--national) 7%, transparent); }
+.opt.in { border-color: var(--instore); background: color-mix(in srgb, var(--instore) 7%, transparent); }
+.opt-k { font: 700 17px var(--f-display); }
+.opt.out .opt-k { color: var(--national); }
+.opt.in .opt-k { color: var(--instore); }
+.opt p { margin: 0; font-size: 14.5px; color: var(--ink-2); line-height: 1.45; }
+.opt .pill { margin-top: auto; }
+.bigq .or { align-self: center; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface, #fff); border: 1px solid var(--line); color: var(--ink-3); font-weight: 700; font-size: 13px; }
+.bigq-a { margin: 2px 0 0; font-size: 15.5px; color: var(--ink-2); max-width: 70ch; }
+.bigq-a strong { color: var(--ink); }
+.opt-s { font-weight: 500; font-size: 14px; opacity: .8; }
+.bigq-ans { background: #0f1724; color: #eef2f7; border-radius: 14px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+.bigq-ans .eyebrow { color: #f2b33d; }
+.ans-big { margin: 0; font: 800 clamp(26px, 3.4vw, 36px)/1.15 var(--f-display); color: #fff; }
+.ans-dim { display: block; font-weight: 600; font-size: .58em; color: #b9c3d1; margin-top: 4px; }
+.ans-why { margin: 0; font-size: 16px; line-height: 1.55; color: #d6dde7; max-width: 68ch; }
+.a-out { color: #6aa8f2; font-weight: 700; }
+.a-in { color: #ff8a57; font-weight: 700; }
+.a-in, .a-out { white-space: nowrap; }
+.ans-dep { margin: 4px 0 2px; padding: 16px 18px; border-radius: 12px; background: #1b2638; border: 1px solid #2c3b55; }
+.ans-dep-k { margin: 0 0 6px; font-size: 14px; font-weight: 600; letter-spacing: .02em; color: #f2b33d; }
+.ans-dep-q { margin: 0; font: 800 clamp(20px, 2.6vw, 28px)/1.35 var(--f-display); color: #fff; text-wrap: balance; }
+.ac-in, .ac-out { display: inline-block; padding: 0 .35em; border-radius: .3em; color: #0f1724; white-space: nowrap; }
+.ac-in { background: #ff8a57; }
+.ac-out { background: #6aa8f2; }
+.q-pop { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; padding: 6px 0 4px; }
+.q-mark { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: #f2b33d; color: #1d1405; font: 800 40px/1 var(--f-display); box-shadow: 0 6px 18px rgba(201, 138, 18, .35); transform: rotate(-6deg); }
+.q-pop .eyebrow { color: #b07a0c; font-weight: 700; margin-bottom: 4px; }
+.q-pop .bigq-q { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.25; letter-spacing: -.01em; }
+.q-hl { white-space: nowrap; padding: 0 .18em; border-radius: .2em; }
+.q-out { color: var(--national); background: color-mix(in srgb, var(--national) 12%, transparent); box-shadow: inset 0 -3px 0 var(--national); }
+.q-in { color: var(--instore); background: color-mix(in srgb, var(--instore) 12%, transparent); box-shadow: inset 0 -3px 0 var(--instore); }
+@media (max-width: 640px) { .q-pop { grid-template-columns: 1fr; gap: 10px; } .q-mark { width: 48px; height: 48px; font-size: 30px; border-radius: 14px; } .q-hl { white-space: normal; } }
+.ans-why strong { color: #fff; }
+@media (prefers-color-scheme: dark) { .bigq-ans { border: 1px solid #33425c; background: #0b1220; } }
+.ans-go { align-self: flex-start; margin-top: 4px; color: #0f1724; background: #fff; text-decoration: none; font-weight: 700; font-size: 14.5px; padding: 9px 16px; border-radius: 999px; }
+.ans-go:hover { background: #f2b33d; }
+.bigq-go { display: flex; padding-left: 82px; }
+@media (max-width: 640px) { .bigq-go { padding-left: 0; } }
+.bigq-go .ans-go { margin-top: 0; background: #0f1724; color: #ffffff; border: 1px solid #0f1724; font-size: 16px; padding: 11px 20px; box-shadow: 0 4px 14px rgba(15, 23, 36, .18); }
+.bigq-go .ans-go:hover { background: #f2b33d; color: #0f1724; border-color: #f2b33d; }
+@media (prefers-color-scheme: dark) { .bigq-go .ans-go { background: #ffffff; color: #0f1724; border-color: #ffffff; } }
+.think { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0 0; padding: 10px 14px; max-width: 70ch; border-radius: 10px; background: color-mix(in srgb, #f2b33d 12%, transparent); border: 1px dashed color-mix(in srgb, #c98a12 45%, transparent); color: var(--ink-2); font-size: 14.5px; line-height: 1.45; }
+.think strong { color: var(--ink); }
+.think-i { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #c98a12; color: #fff; display: grid; place-items: center; font: 700 13px var(--f-display); margin-top: 1px; }
+@media (max-width: 640px) { .bigq-opts { grid-template-columns: 1fr; } .bigq .or { justify-self: center; } }
+.bridge-why { margin: 6px 0 0; font-size: 15.5px; color: var(--ink-2); max-width: 64ch; }
+.roadmap { list-style: none; margin: -12px 0 -8px; padding: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 10px; }
+.roadmap a { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface, #fff); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+.roadmap a:hover, .roadmap a:focus-visible { border-color: var(--ink-3); }
+.rm-n { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 600 12.5px var(--f-mono); }
+.rm-arrow { color: var(--ink-3); font-weight: 700; }
+
+/* Breadcrumb bar: the roadmap pills, pinned to the top. Current = solid dark, done = green with a tick, next = white outline. */
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 68px); }
+.crumbs { position: fixed; top: 0; left: 0; right: 0; z-index: 20; padding-top: env(safe-area-inset-top, 0px);
+  background: var(--bg); background: color-mix(in srgb, var(--bg) 90%, transparent); -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line); box-shadow: 0 4px 14px rgba(15, 23, 42, .06); transform: translateY(-110%); transition: transform .28s ease; }
+.crumbs.show { transform: none; }
+.crumbs ol { list-style: none; margin: 0 auto; padding: 9px 16px; max-width: 1080px; display: flex; align-items: center; justify-content: center; gap: 6px 10px; }
+.crumbs a { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface, #fff); color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: 14px; transition: background-color .25s, color .25s, border-color .25s, box-shadow .25s; }
+.crumbs a:hover, .crumbs a:focus-visible { border-color: var(--ink-3); color: var(--ink); }
+.crumbs .cn { width: 24px; height: 24px; border-radius: 50%; background: var(--line); color: var(--ink-2); display: grid; place-items: center; font: 600 12.5px var(--f-mono); flex: none; transition: background-color .25s, color .25s; }
+.crumbs .csep { color: var(--ink-3); font-weight: 700; }
+/* done */
+.crumbs li.done a { background: #e7f6ec; border-color: #9bd3ae; color: #146c34; }
+.crumbs li.done .cn { background: #1f8a4c; color: #fff; font-size: 0; }
+.crumbs li.done .cn::after { content: "✓"; font-size: 13px; line-height: 1; display: block; }
+.crumbs .cn, .crumbs a { line-height: 1.2; }
+.crumbs li { display: flex; align-items: center; }
+/* current */
+.crumbs li.on a { background: var(--ink); border-color: var(--ink); color: var(--bg); box-shadow: 0 2px 8px rgba(15, 23, 42, .25); }
+.crumbs li.on .cn { background: var(--bg); color: var(--ink); font-size: 12.5px; }
+.crumbs li.on .cn::after { content: none; }
+@media (prefers-color-scheme: dark) {
+  .crumbs li.done a { background: #12321f; border-color: #2c6b45; color: #8fe0ad; }
+}
+@media (max-width: 640px) {
+  .crumbs ol { justify-content: flex-start; gap: 4px 6px; padding: 8px 12px; }
+  .crumbs li:not(.on) .cl { display: none; }
+  .crumbs li:not(.on) a { padding: 5px; }
+  .crumbs a { font-size: 13.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .crumbs { transition: none; } }
+@media print { .crumbs { display: none; } }
+@media (max-width: 640px) { .roadmap { flex-direction: column; align-items: stretch; } .rm-arrow { display: none; } .roadmap a { width: 100%; box-sizing: border-box; } }
+.step-head .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 640px) { .step-head { grid-template-columns: 40px minmax(0, 1fr); } .step-head .actions { grid-column: 1 / -1; justify-content: flex-start; } }
+
+/* Step 1 */
+.defgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .defgrid { grid-template-columns: minmax(0, 1fr); } }
+.def { display: flex; flex-direction: column; gap: 10px; }
+.def .term { font-family: var(--f-display); font-weight: 700; font-size: 21px; display: flex; align-items: center; gap: 10px; line-height: 1.2; }
+.def .term .sw { width: 12px; height: 12px; border-radius: 50%; }
+.def > p { margin: 0; color: var(--ink-2); }
+.def .role { margin: 0; font-size: 14px; color: var(--ink-2); border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.timeline-card h3 { margin-bottom: 2px; }
+.tlscroll { overflow-x: auto; margin-top: 12px; }
+.tlscroll svg { display: block; width: 100%; height: auto; }
+.tlcap { margin: 10px 0 0; font-size: 14px; color: var(--ink-2); max-width: 78ch; }
+.credit { margin: 8px 0 0; font-size: 12px; color: var(--ink-3); }
+.timeline-card h3.lead { font-family: var(--f-display); font-weight: 700; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.tlscroll #coneSvg { width: 100%; max-width: 100%; }
+.tlkey { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* Step 2 */
+.inputs { display: flex; flex-direction: column; gap: 20px; }
+.namefield { max-width: 360px; }
+.toprow { display: grid; grid-template-columns: repeat(2, minmax(0, 280px)); gap: 16px; }
+@media (max-width: 560px) { .toprow { grid-template-columns: minmax(0, 1fr); } }
+.unit.pre input { padding-left: 24px; padding-right: 10px; }
+.unit.pre .u { left: 10px; right: auto; }
+.btable { margin: 4px 0 16px; }
+.btable th, .btable td { padding: 10px 12px; }
+.btable th small { display: block; font-size: 11px; letter-spacing: 0.04em; text-transform: none; font-weight: 500; color: var(--ink-3); }
+.btable td.m { font: 600 20px var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+.btable th.m { text-align: right; }
+.btable tr.ref td { color: var(--ink-2); }
+@media (max-width: 560px) { .btable th small { display: none; } .btable th, .btable td { padding: 9px 6px; } .btable td.m { font-size: 17px; } }
+.btable tr.ref td.m { font-size: 16px; font-weight: 500; color: var(--ink-2); }
+.groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .groups { grid-template-columns: minmax(0, 1fr); } }
+.group { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.group-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.group-title h3 { margin: 0; }
+.req { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); }
+.req.must { color: var(--ink); }
+.source { font-size: 12.5px; color: var(--ink-3); margin: 0; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+label.f, .f { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--ink-2); font-weight: 500; min-width: 0; }
+.unit { position: relative; display: flex; }
+.unit input { padding-right: 34px; }
+.unit .u { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); pointer-events: none; }
+input[type="number"], input[type="text"] { width: 100%; font: 500 15px var(--f-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; min-width: 0; }
+input[type="text"] { font-family: var(--f-body); }
+input[aria-invalid="true"] { border-color: var(--err); box-shadow: inset 0 0 0 1px var(--err); }
+input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--control); outline-offset: 2px; }
+input[type="range"] { width: 100%; accent-color: var(--control); }
+.hint { font-size: 12px; color: var(--ink-3); margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px var(--f-body); border: 1px solid var(--line); background: var(--bg); color: var(--ink-2); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--control); color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--control); }
+.winline { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.defn { font-size: 14px; color: var(--ink); font-weight: 500; }
+p.defn { margin: 0; }
+.source strong { color: var(--ink-2); font-weight: 600; }
+.derived { margin: 0; font-size: 13px; color: var(--ink-2); background: var(--bg); border-radius: 6px; padding: 7px 10px; }
+.derived strong { font-family: var(--f-mono); color: var(--ink); font-weight: 600; }
+.winval { font: 600 15px var(--f-mono); color: var(--ink); white-space: nowrap; }
+details.adv { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+details.adv > summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+details.adv[open] > summary { margin-bottom: 14px; }
+.adv-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+select { width: 100%; font: 500 14px var(--f-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; min-width: 0; }
+select:focus-visible { outline: 2px solid var(--control); outline-offset: 2px; }
+.check .ck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); padding: 9px 0 2px; cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--control); margin: 0; }
+@media (max-width: 860px) { .adv-body { grid-template-columns: minmax(0, 1fr); } }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg label { display: flex; align-items: center; justify-content: center; font-size: 12.5px; padding: 8px 6px; cursor: pointer; color: var(--ink-2); background: var(--bg); text-align: center; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 2px var(--control); font-weight: 600; }
+.runbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid var(--line-soft); padding-top: 16px; }
+button.b { font: 600 14px var(--f-body); border-radius: 6px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+button.b.primary { background: var(--control); border-color: var(--control); color: var(--surface); padding: 11px 20px; font-size: 15px; }
+.status { font-size: 13.5px; color: var(--ink-2); }
+.status.err { color: var(--err); font-weight: 500; }
+
+/* Step 3 */
+.results { display: flex; flex-direction: column; gap: 20px; transition: opacity 200ms ease; }
+.results.stale { opacity: 0.45; }
+.stalebar { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 10px 14px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.runtag { font-size: 12.5px; color: var(--ink-3); }
+.verdict { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 3vw, 30px); line-height: 1.15; margin: 6px 0 16px; text-wrap: balance; }
+.answer { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px 32px; align-items: center; }
+@media (max-width: 620px) { .answer { grid-template-columns: minmax(0, 1fr); } }
+.ratio { font-family: var(--f-display); font-weight: 700; font-size: clamp(54px, 8vw, 84px); line-height: 0.95; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ratio .colon { color: var(--ink-3); padding: 0 0.06em; }
+.ratio-label { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+.answer-copy p { margin: 0 0 8px; color: var(--ink-2); max-width: 60ch; }
+.answer-copy .facts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.answer-copy .fact { display: grid; grid-template-columns: 10px auto minmax(0, 1fr); align-items: baseline; gap: 10px; font-size: 15px; color: var(--ink-2); }
+.answer-copy .fact .t .pill { margin-left: 6px; }
+@media (max-width: 560px) { .answer-copy .fact .t .pill { margin: 4px 0 0; display: table; } }
+.answer-copy .fact strong { font: 600 24px var(--f-mono); font-variant-numeric: tabular-nums; color: var(--ink); min-width: 3.2ch; }
+.answer-copy .fact .sw { border-radius: 50%; transform: translateY(-2px); }
+.answer-copy .so { font-size: 16px; color: var(--ink); font-weight: 600; margin: 0; }
+.answer-copy p:last-child { margin-bottom: 0; }
+.answer-copy strong { color: var(--ink); }
+.lenses { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; border-top: 1px solid var(--line-soft); padding-top: 18px; }
+.lens { display: grid; grid-template-columns: 170px minmax(0, 1fr) 72px; gap: 6px 16px; align-items: center; }
+@media (max-width: 620px) { .lens { grid-template-columns: minmax(0, 1fr) 68px; } .lens .bar { grid-column: 1 / -1; grid-row: 2; } }
+.lens .name { font-weight: 600; font-size: 13.5px; }
+.lens .note { display: block; font-weight: 400; font-size: 12px; color: var(--ink-3); }
+.bar { display: flex; gap: 2px; height: 14px; }
+.bar span { display: block; height: 100%; }
+.bar span:first-child { background: var(--national); border-radius: 4px 0 0 4px; }
+.bar span:last-child { background: var(--instore); border-radius: 0 4px 4px 0; }
+.lens .val { font: 500 13.5px var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.bench-note { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-top: 6px; padding: 14px 16px; border: 1.5px solid var(--ink); border-radius: 8px; }
+.bench-note strong { font-family: var(--f-display); font-weight: 700; font-size: 19px; line-height: 1.25; color: var(--ink); text-wrap: balance; }
+.bench-note span { font-size: 13px; color: var(--ink-2); }
+.lenses-title { font-size: 11.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.lens.final { padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.lens.final .bar { height: 22px; }
+.lens.final .val { font-weight: 600; font-size: 15px; }
+.bigidea { margin: 0; padding: 18px 22px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ink); border-radius: 0 10px 10px 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(21px, 2.6vw, 27px); line-height: 1.25; text-wrap: balance; }
+.bigidea .bb { color: var(--national); }
+.bigidea .sa { color: var(--instore); }
+.runtag { margin-top: 6px !important; font-size: 12.5px !important; color: var(--ink-3) !important; }
+#step3 .verdict { margin: 4px 0 16px; }
+.cyc { margin-top: 14px; }
+.cyc-bar { display: flex; gap: 3px; height: 26px; }
+.cyc-bar span { display: block; height: 100%; min-width: 0; }
+.cyc-out { background: var(--national); border-radius: 6px 0 0 6px; }
+.cyc-in { background: var(--instore); border-radius: 0 6px 6px 0; min-width: 12px !important; flex-shrink: 0; }
+.cyc-labels { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 14px; color: var(--ink-2); }
+.cyc-labels strong { font-family: var(--f-mono); color: var(--ink); }
+.cyc-labels .r { text-align: right; }
+.cyc-axis { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--ink-3); }
+.cyc-note { margin: 14px 0 0; font-size: 16px; color: var(--ink); font-weight: 500; }
+@media (max-width: 560px) { .cyc-labels { flex-direction: column; gap: 6px; } .cyc-labels .r { text-align: left; } }
+.esc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 460px; counter-reset: e; }
+.esc li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 12px; align-items: start; font-size: 15px; color: var(--ink-2); padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
+.esc li:last-child { border-bottom: 0; padding-bottom: 0; color: var(--ink); font-weight: 500; }
+.esc strong { font: 600 18px var(--f-mono); color: var(--ink); }
+.esc .ico { width: 18px; height: 18px; transform: translateY(3px); }
+.esc .pill { margin-left: 4px; }
+.bigidea-wrap { display: flex; flex-direction: column; gap: 8px; padding: 26px 26px 28px; background: var(--band-blue); border-radius: 12px; }
+.buyers .bigidea-wrap { grid-column: 1 / -1; margin: 4px -28px -28px; border-radius: 0 0 10px 10px; padding: 24px 28px 28px; }
+@media (max-width: 760px) { .buyers .bigidea-wrap { margin: 4px -20px -20px; padding: 20px; } }
+.bigidea-wrap .bigidea { padding: 0; background: none; border: 0; border-radius: 0; font-size: clamp(22px, 3vw, 31px); }
+.subhead { font: 700 19px var(--f-display); margin: 0 0 14px; color: var(--ink); text-wrap: balance; }
+.today, .today-vs, #pathCard { display: flex; flex-direction: column; gap: 12px; }
+.today .subhead, .today-vs .subhead, #pathCard .subhead { margin: 0; }
+.today-vs .gap { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Split-bar slider: the whole bar is today's budget; drag the divider */
+.drag-lead { margin: 0 0 2px; font-size: 15px; font-weight: 700; color: var(--ink); }
+.split-slider { display: flex; flex-direction: column; gap: 8px; }
+.sp-labels { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; font-weight: 600; }
+.sp-labels b { font: 700 24px var(--f-mono); margin: 0 8px 0 0; }
+.sp-pf b { margin: 0 0 0 8px; }
+.sp-bb { color: var(--national); } .sp-pf { color: var(--instore); }
+.split-range { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; border-radius: 10px; cursor: ew-resize;
+  background: linear-gradient(to right, var(--national) 0 calc(7px + (100% - 14px) * var(--p, .3)), var(--instore) calc(7px + (100% - 14px) * var(--p, .3)) 100%); }
+.split-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 58px; border-radius: 6px; background: #fff; border: 2px solid var(--ink); box-shadow: 0 2px 8px rgba(15, 23, 42, .3); }
+.split-range::-moz-range-thumb { width: 10px; height: 54px; border-radius: 6px; background: #fff; border: 2px solid var(--ink); box-shadow: 0 2px 8px rgba(15, 23, 42, .3); }
+.split-range::-moz-range-track { background: transparent; }
+.split-range:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.split-range:disabled { opacity: .75; cursor: not-allowed; }
+/* The conclusion: next move, high contrast */
+#gapMsg { margin: 10px 0 0; padding: 18px 22px 20px; border-radius: 12px; background: #0f1724; color: #fff; border-left: 6px solid var(--gm-accent, #f2b33d);
+  font: 800 clamp(20px, 2.4vw, 26px)/1.3 var(--f-display); text-wrap: balance; box-shadow: 0 6px 18px rgba(15, 23, 42, .18); }
+#gapMsg::before { content: attr(data-eye); display: block; margin-bottom: 6px; font: 700 11.5px var(--f-body); letter-spacing: .09em; text-transform: uppercase; color: #f2b33d; }
+#gapMsg[data-dir="bb"] { --gm-accent: #6aa8f2; }
+#gapMsg[data-dir="pf"] { --gm-accent: #ff8a57; }
+#gapMsg[data-dir="ok"] { --gm-accent: #34c27a; }
+#gapMsg[data-dir="ok"]::before { color: #6fdc9f; }
+#gapMsg .a-out, #gapMsg .a-in { display: inline; margin: 0; font: inherit; }
+#gapMsg .a-out { color: #6aa8f2; } #gapMsg .a-in { color: #ff8a57; }
+#gapMsg .gm-test { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #2a3850; font: 400 14px/1.45 var(--f-body); }
+#gapMsg .gm-tl { font: 700 11px var(--f-body); letter-spacing: .09em; text-transform: uppercase; color: #f2b33d; margin-right: 2px; }
+#gapMsg .gm-chip { padding: 3px 10px; border-radius: 999px; background: #1f2b40; border: 1px solid #33425c; color: #fff; font-weight: 600; font-size: 13px; }
+#gapMsg .gm-tn { flex-basis: 100%; color: #c9d2de; font-size: 13.5px; }
+#gapMsg .gm-sub { display: block; margin-top: 6px; font: 400 15px/1.5 var(--f-body); color: #c9d2de; }
+@media (prefers-color-scheme: dark) { #gapMsg { border-top: 1px solid #33425c; border-right: 1px solid #33425c; border-bottom: 1px solid #33425c; } }
+.ideal-row { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.ideal-lab { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.ideal-lab span { text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; color: var(--ink-3); }
+.ideal-lab b { font-weight: 600; } .ideal-lab i { font-style: normal; font-weight: 700; font-family: var(--f-mono); }
+.ideal-bar { height: 16px; border-radius: 8px; opacity: .9;
+  background: linear-gradient(to right, var(--national) 0 calc(7px + (100% - 14px) * var(--p, .6)), var(--instore) calc(7px + (100% - 14px) * var(--p, .6)) 100%); }
+.slider-f { max-width: 520px; }
+.slider-row { display: flex; align-items: center; gap: 14px; }
+.slider-row output { font: 600 18px var(--f-mono); color: var(--ink); min-width: 4ch; text-align: right; }
+.li-details { padding-top: 10px; }
+.litable th, .litable td { vertical-align: middle; }
+.litable tbody th { font-weight: 500; font-size: 14px; color: var(--ink); text-transform: none; letter-spacing: 0; }
+.litable td .unit { max-width: 150px; }
+.litable tfoot th, .litable tfoot td { font-size: 14px; text-transform: none; letter-spacing: 0; }
+.litable tfoot .li-sub th { font-weight: 500; color: var(--ink-2); }
+.litable tfoot tr.li-sub:first-child th, .litable tfoot tr.li-sub:first-child td { border-top: 2px solid var(--line); }
+.litable tfoot .li-pc { font-weight: 700; font-family: var(--f-mono); }
+.litable tfoot .li-amt { font-weight: 600; font-family: var(--f-mono); color: var(--ink); }
+.litable tfoot .li-tot th, .litable tfoot .li-tot td { font-weight: 800; color: var(--ink); background: var(--bg); border-top: 1px solid var(--line); }
+.litable tfoot .li-tot .li-pc { font-family: var(--f-display); font-size: 15px; }
+.gap { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line-soft); padding-top: 16px; }
+.gaprow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 64px; gap: 12px; align-items: center; }
+.gaplab { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.gapbar { display: flex; height: 22px; gap: 2px; }
+.gapbar span { display: block; height: 100%; transition: flex-grow 300ms ease; }
+.gapbar span:first-child { background: var(--national); border-radius: 5px 0 0 5px; }
+.gapbar span:last-child { background: var(--instore); border-radius: 0 5px 5px 0; }
+.gapval { font: 600 14px var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.gapmsg { margin: 4px 0 0; font: 700 17px var(--f-display); color: var(--ink); text-wrap: balance; }
+.gapmsg span { display: block; font: 400 14px var(--f-body); color: var(--ink-2); margin-top: 4px; }
+.path-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.pace-f { width: min(100%, 240px); }
+.path { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
+.path li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); }
+.path li.now { border-color: var(--ink-3); }
+.path li.goal { border: 1.5px solid var(--ink); background: var(--surface); }
+.path .when { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); }
+.path .ratio-s { font: 700 22px var(--f-display); font-variant-numeric: tabular-nums; }
+.path .ratio-s .c { color: var(--ink-3); }
+.path .mini { display: flex; height: 6px; gap: 1px; }
+.path .mini span:first-child { background: var(--national); border-radius: 3px 0 0 3px; }
+.path .mini span:last-child { background: var(--instore); border-radius: 0 3px 3px 0; }
+.score { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 560px) { .score { grid-template-columns: minmax(0, 1fr); } .gaprow { grid-template-columns: 70px minmax(0, 1fr) 56px; } }
+.scol { border-left: 4px solid; padding-left: 14px; }
+.scol.out { border-color: var(--national); }
+.scol.in { border-color: var(--instore); }
+.scol ul { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; color: var(--ink); }
+.scoreall { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line-soft); font-size: 14.5px; color: var(--ink-2); }
+.scoreall strong { color: var(--ink); }
+.plan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .plan { grid-template-columns: minmax(0, 1fr); } }
+.role { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.role.out { border-top-color: var(--national); }
+.role.in { border-top-color: var(--instore); }
+.role-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.role-head .pct { font: 600 13px var(--f-mono); color: var(--ink-2); }
+.role .amt { font: 700 clamp(44px, 6vw, 60px) var(--f-display); line-height: 1; letter-spacing: -0.02em; margin-top: 6px; }
+.role .who { font-size: 15px; color: var(--ink-2); }
+.role .who strong { color: var(--ink); font-family: var(--f-mono); }
+.role dl { margin: 10px 0 0; padding-top: 12px; border-top: 1px solid var(--line-soft); display: grid; gap: 4px; font-size: 14px; }
+.role dt { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-top: 6px; }
+.role dt:first-child { margin-top: 0; }
+.role dd { margin: 0; color: var(--ink); }
+.callout { display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--surface); }
+.callout strong { font-family: var(--f-display); font-size: 18px; line-height: 1.25; }
+.callout span { font-size: 14px; color: var(--ink-2); }
+.evidence { display: flex; flex-direction: column; gap: 10px; padding: 22px 24px; }
+.range { display: flex; flex-direction: column; gap: 8px; }
+.range .subhead { margin: 0; }
+.rg-why { margin: 0; font-size: 14.5px; color: var(--ink-2); max-width: 74ch; }
+.rg-why strong { color: var(--ink); font-family: var(--f-mono); }
+.rg-track { position: relative; height: 10px; margin: 22px 10px 62px; border-radius: 999px; background: var(--line-soft); box-shadow: inset 0 0 0 1px var(--line); }
+.rg-zone { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: var(--national); opacity: 0.35; }
+.rg-tick { position: absolute; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
+.rg-dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--national); background: var(--surface); }
+.rg-tick.start .rg-dot { background: var(--national); }
+.rg-lab { position: absolute; top: 22px; font: 700 17px var(--f-display); color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rg-cap { position: absolute; top: 44px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+.range.pf .rg-zone { background: var(--instore); }
+.range.pf .rg-tick.end .rg-dot { border-color: var(--instore); }
+.rg-axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); margin: 0 10px; }
+.seesaw { display: flex; flex-direction: column; gap: 8px; padding: 22px 24px; }
+.ss-head { display: flex; flex-direction: column; gap: 8px; }
+.ss-head .subhead { margin: 0; }
+.ss-viz { max-width: 720px; width: 100%; margin: 8px auto 0; }
+.ss-viz svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ss-replay { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink-3); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.ss-replay:hover, .ss-replay:focus-visible { color: var(--ink); border-color: var(--ink-3); }
+.ss-key { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 22px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); margin-top: 2px; }
+.ln-solid { display: inline-block; width: 26px; height: 6px; border-radius: 3px; background: var(--ink-2); }
+.ln-dash { display: inline-block; width: 26px; height: 0; border-top: 2px dashed var(--ink-3); }
+.seesaw .rg-axis { max-width: 720px; width: 100%; margin: 2px auto 10px; padding: 0 6%; box-sizing: border-box; font-size: 14px; align-items: center; }
+.ax { font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 2px solid; background: transparent; line-height: 1.2; transition: background-color .35s ease, color .35s ease, opacity .35s ease; }
+.ax-pf { color: var(--instore); border-color: var(--instore); }
+.ax-bb { color: var(--national); border-color: var(--national); }
+.ax-pf.on { background: var(--instore); color: #fff; }
+.ax-bb.on { background: var(--national); color: #fff; }
+.rg-axis.set .ax:not(.on) { opacity: .45; }
+@media (prefers-reduced-motion: no-preference) { .ax.on { animation: axPop 520ms cubic-bezier(.3,1.6,.5,1); } @keyframes axPop { 0% { transform: scale(.92); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } } }
+@media (max-width: 640px) { .seesaw .rg-axis { padding: 0; font-size: 12.5px; } .ax { padding: 6px 10px; } }
+.seesaw .plan { margin-top: 14px; gap: 24px; }
+.seesaw .role { border: 0; border-top: 4px solid; border-radius: 0; padding: 14px 0 0; background: none; }
+.seesaw .role.in { border-top-color: var(--instore); }
+.seesaw .role.out { border-top-color: var(--national); }
+.ev-body { display: flex; flex-direction: column; gap: 10px; }
+.baro-wrap { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 6px; }
+.baro-head { margin: 0; font: 700 19px var(--f-display); color: var(--ink); text-wrap: balance; }
+.baro-sub { margin: 0; font-size: 14px; color: var(--ink-2); max-width: 70ch; }
+.baros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 6px; align-items: stretch; }
+.baro { margin: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 6px; text-align: center; padding: 10px 10px 12px; border-radius: 10px; border: 1.5px solid transparent; }
+.baro.best { border-color: var(--ink); background: var(--bg); }
+.b-best { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: var(--ink); }
+.b-ratio { font: 700 26px var(--f-display); font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1; }
+.b-ratio .c { color: var(--ink-3); }
+.b-ratio .nbb { color: var(--national); }
+.b-ratio .npf { color: var(--instore); }
+.f-pf { border-radius: 0; }
+.tube { width: 48px; height: 130px; border-radius: 10px; background: var(--line-soft); box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.fill { display: flex; flex-direction: column; gap: 2px; transform-origin: bottom; }
+.fill span { display: block; min-height: 0; }
+.f-pf { background: var(--instore); border-radius: 4px 4px 0 0; }
+.f-bb { background: var(--national); }
+.fill span:first-child { border-radius: 4px 4px 0 0; }
+.fill { height: 100%; }
+.b-eff { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 2px; }
+.eff-l { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); }
+.pips { display: flex; gap: 4px; }
+.pip { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.pip.on { background: var(--ink); }
+.eff-w { font: 600 13px var(--f-body); color: var(--ink); }
+.baro.best .tube { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.baro figcaption { font-size: 13px; color: var(--ink-2); line-height: 1.4; max-width: 22ch; }
+.baro figcaption strong { display: block; font-size: 14px; color: var(--ink); margin-bottom: 2px; }
+.baro-key { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-top: 10px; font-size: 12.5px; color: var(--ink-3); }
+.baro-key .key { color: var(--ink-2); }
+@media (max-width: 640px) { .baros { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .tube { height: 110px; width: 40px; } .b-ratio { font-size: 22px; } }
+@media (prefers-reduced-motion: no-preference) { .fill { animation: rise 900ms cubic-bezier(.2,.7,.2,1) both; } .baro:nth-child(2) .fill { animation-delay: 120ms; } .baro:nth-child(3) .fill { animation-delay: 240ms; } .baro:nth-child(4) .fill { animation-delay: 360ms; } @keyframes rise { from { transform: scaleY(0); } to { transform: scaleY(1); } } }
+.ev-claim { margin: 0; font: 700 clamp(20px, 2.4vw, 25px) var(--f-display); line-height: 1.25; color: var(--ink); text-wrap: balance; max-width: none; }
+.ev-lead { margin: 0; font-size: 15px; color: var(--ink-2); }
+.ev-lead em { color: var(--ink); font-style: italic; font-weight: 600; }
+.ev-claim .bb { color: var(--national); }
+.c-out { color: var(--national); }
+.c-in { color: var(--instore); }
+.c-in, .c-out { white-space: nowrap; }
+.gas-card { display: flex; flex-direction: column; gap: 10px; }
+.gas-cars { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 8px; }
+.gas-cars .gc { display: inline-flex; width: 34px; }
+.gas-cars .gc svg { width: 100%; height: auto; display: block; }
+.gas-cars .gc.out { color: var(--national); opacity: .55; }
+.gas-cars .gc.in { color: var(--instore); }
+.gas-cars .gc.pump { width: 16px; margin-left: -4px; }
+.gas-key { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--ink-2); }
+.gas-key b { font: 700 15px var(--f-mono); }
+.gas-txt { margin: 0; font-size: 14.5px; color: var(--ink-2); line-height: 1.5; }
+.gas-map { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+@media (max-width: 640px) { .gas-cars { gap: 6px 5px; } .gas-cars .gc { width: 22px; } .gas-cars .gc.pump { width: 12px; margin-left: -2px; } }
+.ev-claim .sa { color: var(--instore); }
+.ev-claim .ev-line { display: block; }
+.ev-stats { display: grid; grid-template-columns: repeat(3, minmax(0, max-content)); gap: 8px 40px; margin: 6px 0 0; }
+.ev-stats div { display: flex; flex-direction: column; }
+.ev-stats dt { font: 700 clamp(30px, 4vw, 40px) var(--f-display); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--ink); }
+.ev-stats dd { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+@media (max-width: 420px) { .ev-stats { gap: 8px 22px; } }
+.ev-src { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.ev-ctx { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.ev-why { margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line-soft); font-size: 14.5px; color: var(--ink-2); max-width: 78ch; }
+.ev-why strong { color: var(--ink); font-family: var(--f-display); font-size: 16px; }
+.warn { background: var(--warn-bg); color: var(--warn-ink); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin: 14px 0 0; }
+
+.buyers { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px 40px; align-items: center; padding: 28px; }
+@media (max-width: 760px) { .buyers { grid-template-columns: minmax(0, 1fr); padding: 20px; } }
+.buyers-stats { display: flex; flex-direction: column; gap: 22px; }
+.bstat { padding-left: 16px; border-left: 4px solid; }
+.bstat.out { border-color: var(--national); }
+.bstat.in { border-color: var(--instore); }
+.bnum { font: 700 clamp(44px, 6vw, 64px) var(--f-display); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.bstat.out .bnum { color: var(--national); }
+.bstat.in .bnum { color: var(--instore); }
+.blabel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font: 700 18px var(--f-display); color: var(--ink); }
+.bstat p { margin: 6px 0 0; font-size: 14.5px; color: var(--ink-2); max-width: 42ch; }
+.bstat p.brandwin { color: var(--ink); }
+.buyers-viz { min-width: 0; }
+.buyers-viz .eyebrow { margin-bottom: 10px; }
+#dotSvg { display: block; width: 100%; height: auto; }
+#dotSvg .outs { opacity: 0.8; }
+.vizkey { display: flex; gap: 16px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+@media (prefers-reduced-motion: no-preference) {
+  #dotSvg.show .outs { animation: fadeIn 500ms ease both; }
+  #dotSvg.show .ins { animation: fadeIn 500ms 350ms ease both; }
+  #dotSvg .inb .ring { transform-box: fill-box; transform-origin: center; animation: ping 2.4s ease-out infinite; animation-delay: inherit; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ping { 0% { transform: scale(1); opacity: 0.8; } 70%, 100% { transform: scale(2.6); opacity: 0; } }
+}
+.dots-card { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 16px 32px; align-items: center; }
+@media (max-width: 560px) { .dots-card { grid-template-columns: minmax(0, 1fr); } }
+.dots-card svg { width: 100%; max-width: 220px; height: auto; display: block; }
+.dotkey { display: flex; flex-direction: column; gap: 20px; min-width: 0; max-width: 420px; }
+.kgroup { display: flex; flex-direction: column; gap: 8px; }
+.khead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: 600; font-size: 15px; color: var(--ink); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.khead .n { font: 600 18px var(--f-mono); font-variant-numeric: tabular-nums; }
+.khead .key { gap: 10px; }
+.khead .sw { border-radius: 50%; width: 10px; height: 10px; margin-left: 3px; }
+.dotkey .item { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: 14px; color: var(--ink-2); }
+.dotkey .item .sw { width: 10px; height: 10px; border-radius: 50%; transform: translateY(1px); box-shadow: inset 0 0 0 1px var(--nonbuyer-ring); }
+.dotkey .item .n { font: 600 15px var(--f-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+#dotSvg .cell { transition: opacity 260ms ease; }
+@keyframes hop { 0%, 45%, 100% { transform: translateY(0); } 20% { transform: translateY(-3.5px); } 32% { transform: translateY(0); } 38% { transform: translateY(-1px); } }
+@keyframes glow { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.45; } }
+.hop { animation: hop 1.9s ease-in-out infinite; }
+.hop.slow { animation-duration: 2.6s; }
+.halo { opacity: 0.25; animation: glow 3.2s ease-in-out infinite; }
+.dotkey .ico { width: 16px; height: 16px; display: block; transform: translateY(2px); }
+.dotkey .sw.glow { box-shadow: 0 0 6px 2px var(--national); }
+
+.opp { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.opp .v { font: 600 34px var(--f-mono); font-variant-numeric: tabular-nums; line-height: 1; }
+.opp .what { font-size: 14px; color: var(--ink); }
+.opp .act { font-size: 13.5px; color: var(--ink-2); border-top: 1px solid var(--line-soft); padding-top: 8px; margin-top: auto; }
+.opp.lead { box-shadow: inset 0 0 0 2px var(--ink-3); }
+.lead-tag { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--ink-2); }
+.focusline { margin: 16px 0 0; font-size: 14.5px; color: var(--ink-2); max-width: 72ch; }
+.focusline strong { color: var(--ink); }
+
+.tbl { overflow-x: auto; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+table.jobs { font-size: 14px; table-layout: fixed; }
+.jobs-wrap { margin-top: 0; }
+table.jobs thead th { text-transform: none; letter-spacing: 0; padding: 14px 12px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.colhead { display: inline-block; font: 700 15px var(--f-display); color: var(--ink); padding: 5px 14px; border-radius: 999px; border: 1.5px solid; }
+.colhead.out { border-color: var(--national); background: var(--band-blue); }
+.colhead.in { border-color: var(--instore); background: var(--band); }
+/* Columns split at the diagram's "Starts deciding" line (660 of 960 = 68.75%). */
+table.jobs thead th:nth-child(2) { width: 50.75%; }
+table.jobs thead th:nth-child(3) { width: 31.25%; }
+table.jobs thead th:nth-child(3), table.jobs td:nth-of-type(2) { border-left: 1.5px dashed var(--ink-3); }
+table.jobs thead th:first-child { width: 18%; }
+table.jobs tbody th { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); padding: 11px 12px; }
+table.jobs td { padding: 11px 12px; color: var(--ink-2); }
+table.jobs tbody tr:last-child th, table.jobs tbody tr:last-child td { border-bottom: 0; }
+.tagset { display: flex; flex-wrap: wrap; gap: 6px; }
+.tagset .pill { font-weight: 500; }
+.tagset .pill.out { background: var(--band-blue); }
+.tagset .pill.in { background: var(--band); }
+@media (max-width: 600px) {
+  table.jobs, table.jobs tbody, table.jobs tr, table.jobs th, table.jobs td { display: block; width: auto; }
+  table.jobs thead { display: none; }
+  table.jobs tbody tr { padding: 12px 0; border-bottom: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 6px; }
+  table.jobs tbody tr:last-child { border-bottom: 0; }
+  table.jobs tbody th, table.jobs td { padding: 0; border: 0; }
+  table.jobs tr.ex th, table.jobs tr.ex td { border: 0; padding: 0; }
+  table.jobs td:nth-of-type(2) { border-left: 0; }
+  .jobs-wrap { margin-top: 8px; }
+  table.jobs td .tagset { margin-top: 2px; }
+  table.jobs td::before { content: attr(data-label); display: block; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+  table.jobs td:nth-of-type(1)::before { color: var(--national); }
+  table.jobs td:nth-of-type(2)::before { color: var(--instore); }
+}
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+th { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+tr.hl td { font-weight: 600; }
+@media (max-width: 560px) {
+  .tactics thead { display: none; }
+  .tactics tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .tactics td { display: block; border: 0; padding: 0; }
+  .tactics td:first-child { font-weight: 600; color: var(--ink); }
+  .tactics td:last-child { padding-top: 4px; }
+}
+.lineup { margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+.lineup strong { color: var(--ink); }
+
+details.howto > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+details.howto > summary::-webkit-details-marker { display: none; }
+details.howto > summary h2 { margin: 0; }
+details.howto > summary .tog { font-size: 13px; color: var(--control); font-weight: 600; white-space: nowrap; }
+details.howto[open] > summary { margin-bottom: 16px; }
+.steps { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+.steps li::before { counter-increment: s; content: counter(s); font: 600 13px var(--f-mono); width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-2); }
+.steps h3 { font-size: 14px; margin: 1px 0 2px; }
+.steps p { margin: 0; color: var(--ink-2); font-size: 13.5px; max-width: 70ch; }
+code.f { display: block; font-family: var(--f-mono); font-size: 12.5px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: 6px; padding: 7px 10px; margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+.chartbox { margin-top: 22px; border-top: 1px solid var(--line-soft); padding-top: 18px; }
+.chartwrap { position: relative; }
+.chartwrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); margin: 8px 0; }
+.ln { display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--instore); transform: translateY(-3px); }
+.ln.dash { border-top: 2px dashed var(--ink-3); }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); white-space: nowrap; }
+.tip b { font-family: var(--f-mono); font-weight: 600; }
+details.tblv { margin-top: 10px; }
+details.tblv summary { cursor: pointer; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.assume { margin: 18px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; }
+.assume li { margin-bottom: 5px; }
+.sources { margin-top: 14px; font-size: 13px; color: var(--ink-2); }
+.sources a { color: var(--control); }
+@media (prefers-reduced-motion: no-preference) { .bar span { transition: width 220ms ease; } }
+@media (prefers-reduced-motion: reduce) { #dotSvg .cell, .results { transition: none; } .hop, .halo { animation: none; } }
+/* One indent for every card: 24px, 20px on small screens. Budget input stays under its step headline. */
+.card, .buyers, .evidence, .seesaw { padding: 24px; }
+.buyers .bigidea-wrap { margin: 4px -24px -24px; padding: 24px; }
+.budgetbar { padding-left: 54px; }
+@media (max-width: 640px) {
+  .card, .buyers, .evidence, .seesaw { padding: 20px; }
+  .buyers .bigidea-wrap { margin: 4px -20px -20px; padding: 20px; }
+}
+</style>
+
+</head>
+<body>
+<div id="flowBg" aria-hidden="true"></div>
+<div class="wrap">
+  <header>
+    <h1>Brand Building to Performance Ratio Calculator</h1>
+    <div class="eyebrow hdr-ptags">Built on two principles <span class="ptag" title="John Dawes: at any moment only about 5% of a category's buyers are in the market; 95% aren't."><b>95:5</b>John Dawes' rule</span> <span class="ptag" title="Les Binet &amp; Peter Field: the most effective campaigns put about 60% into brand building and 40% into sales activation."><b>60:40</b>Binet &amp; Field's rule</span></div>
+      <div class="bigq hdr-q" role="group" aria-labelledby="bigqQ">
+      <div class="q-pop">
+        <span class="q-mark" aria-hidden="true">?</span>
+        <div>
+          <div class="eyebrow">The question this tool answers</div>
+          <p class="bigq-q" id="bigqQ">Where should your investment ($$) go: <span class="q-hl q-out">Brand Building</span> or <span class="q-hl q-in">Performance</span>?</p>
+        </div>
+      </div>
+      <div class="bigq-go" id="bigqA">
+        <a class="ans-go" href="#s2">Let’s find out using 3 steps <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- STEP 1 -->
+  <section class="step principle" aria-labelledby="s1">
+    <details class="pr-det" id="prOne">
+    <summary class="pr-head"><span class="pr-num">Principle 1 of 2</span><span class="ptag" title="John Dawes: at any moment only about 5% of a category's buyers are in the market; 95% aren't."><b>95:5</b>John Dawes' rule</span><span class="tog"><span class="sr">Show the principle</span></span><span class="pr-tease">Only 5% of buyers are shopping right now. The other 95% aren't.</span></summary>
+    <div class="step-head nonum">
+      <div>
+        <h2 id="s1" class="dawes-quote"><span class="ql">“According to Dawes, only 5% of B2B buyers are in-market to buy right now. <span class="qtag in">In-Market Buyers</span></span><span class="ql">That means 95% of the buyers that you reach are out-of-market <span class="qtag out">Out-of-Market Buyers</span> and won’t buy for months or even years.”</span></h2>
+      </div>
+    </div>
+
+    <div class="card gas-card">
+      <div class="eyebrow">Think of it like a gas station</div>
+      <div class="gas-cars" role="img" aria-label="Twenty cars on the road: nineteen just driving, one at the pump"><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc out"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc in"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M3 9 5 4.2Q5.6 3 7 3h9.2q1.4 0 2.1 1.2L20.6 8h.4q2 0 2 2v2H1v-2q0-1 2-1Z" fill="currentColor"/><circle cx="6.2" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/><circle cx="17.8" cy="12.6" r="2.3" fill="currentColor" stroke="var(--surface)" stroke-width="1.3"/></svg></span><span class="gc in pump"><svg viewBox="0 0 16 20" aria-hidden="true"><rect x="1.5" y="2" width="8" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.3" y="4" width="4.4" height="4" rx=".6" fill="currentColor"/><path d="M9.5 7h2.2q1.3 0 1.3 1.3V14q0 1.3 1 1.3t1-1.3V6.5L13 4.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
+      <div class="gas-key"><span><b class="c-out">95</b> just driving · <span class="c-out">Out-of-Market</span></span><span><b class="c-in">5</b> at the pump · <span class="c-in">In-Market</span></span></div>
+      <p class="gas-txt">Of every 100 cars on the road, only 5 need gas right now.<br>The other 95 will need it too, just not today.</p>
+    </div>
+
+    <div class="card timeline-card">
+      <div class="tlscroll">
+        <svg id="coneSvg" viewBox="0 0 960 400" role="img" aria-label="A large pool of out-of-market buyers on the left, reached by Brand Building, narrowing to a small band of in-market buyers on the right, reached by Performance, as buyers move toward purchase."></svg>
+      </div>
+      <div class="tbl jobs-wrap">
+        <table class="jobs">
+          <thead>
+            <tr>
+              <th scope="col" class="leadin">Each group needs a different job from your media</th>
+              <th scope="col"><span class="colhead out">Brand Building</span></th>
+              <th scope="col"><span class="colhead in">Performance <span class="colsub">(Sales Activation)</span></span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Objective</th><td data-label="Brand Building">Build memory, salience and trust</td><td data-label="Performance">Drive an immediate purchase</td></tr>
+            <tr class="ex"><th scope="row">Examples</th><td data-label="Brand Building"><span class="tagset"><span class="pill out">Reach campaigns</span><span class="pill out">Connected TV</span><span class="pill out">Awareness video</span><span class="pill out">SEO</span><span class="pill out">Sponsorships</span><span class="pill out">Organic social</span></span></td><td data-label="Performance"><span class="tagset"><span class="pill in">Traffic campaigns</span><span class="pill in">Conversion campaigns</span><span class="pill in">Meta / TikTok product catalog campaigns</span><span class="pill in">Retail search</span></span></td></tr>
+            <tr><th scope="row">Timing</th><td data-label="Brand Building">Slow to show (6–18 months), then lasts for years as brand equity builds</td><td data-label="Performance">Fast (1–4 weeks), then fades within months once spend stops</td></tr>
+            <tr><th scope="row">Effect on growth</th><td data-label="Brand Building">Lasting gains in penetration and share</td><td data-label="Performance">Short-term sales lift, little lasting growth on its own</td></tr>
+            <tr><th scope="row">Message</th><td data-label="Brand Building">Emotional, story-led, memorable</td><td data-label="Performance">Rational, direct, action-led</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="credit">Quote: Peter Weinberg &amp; Jon Lombardo, The B2B Institute (Marketing Week), on John Dawes' 95-5 rule. Diagram adapted from The B2B Institute's 95-5 illustration in How B2B Brands Grow (2021). Table based on Binet &amp; Field, The Long and the Short of It (IPA, 2013).</p>
+    </div>
+    </details>
+  </section>
+
+  <p class="tool-eyebrow">Now apply it to your brand</p>
+  <ol class="roadmap" aria-label="How the calculator works">
+    <li><a href="#s2"><span class="rm-n">1</span>Enter your panel data</a></li>
+    <li aria-hidden="true" class="rm-arrow">→</li>
+    <li><a href="#s3"><span class="rm-n">2</span>See who's Out-of-Market vs. In-Market</a></li>
+    <li aria-hidden="true" class="rm-arrow">→</li>
+    <li><a href="#s4"><span class="rm-n">3</span>Get your budget split</a></li>
+  </ol>
+  <nav class="crumbs" id="crumbs" aria-label="Calculator steps" hidden>
+    <ol>
+      <li data-c="1"><a href="#s2"><span class="cn">1</span><span class="cl">Enter your panel data</span></a></li>
+      <li class="csep" aria-hidden="true">→</li>
+      <li data-c="2"><a href="#s3"><span class="cn">2</span><span class="cl">See who's Out-of-Market vs. In-Market</span></a></li>
+      <li class="csep" aria-hidden="true">→</li>
+      <li data-c="3"><a href="#s4"><span class="cn">3</span><span class="cl">Get your budget split</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- STEP 2 -->
+  <section class="step" aria-labelledby="s2" data-step="1">
+    <div class="step-head">
+      <span class="step-num" aria-hidden="true">1</span>
+      <div>
+        <div class="ptag-row"><span class="ptag" title="John Dawes: at any moment only about 5% of a category's buyers are in the market; 95% aren't."><b>95:5</b>John Dawes' rule</span></div>
+        <h2 id="s2">Enter your household panel data</h2>
+        <dl class="s1-tips">
+          <div><dt>Where to find it</dt><dd>Your household panel report, rolling 52 weeks (NielsenIQ Homescan, Circana or Numerator).</dd></div>
+          <div><dt>No panel data?</dt><dd>A short buyer survey on how often people buy the category gives you the frequency.</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <form class="card inputs" id="form" autocomplete="off" novalidate>
+      <div class="toprow">
+        <label class="f" for="label"><span>Sector</span>
+          <select id="label">
+            <option value="">Choose your sector</option>
+            <option value="all">All for-profit cases</option>
+            <option value="fin">Financial services</option>
+            <option value="dur">Non-automotive durables</option>
+            <option value="onl">Online or subscription sales</option>
+            <option value="ret">Retail</option>
+            <option value="fmcg">FMCG / CPG</option>
+            <option value="oth">Other services</option>
+            <option value="trv">Travel, restaurants, media</option>
+            <option value="b2b">B2B</option>
+            <option value="npo">Not-for-profit</option>
+            <option value="new">Brands in their first 1 to 2 years</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="groups">
+        <div class="group">
+          <div class="group-title"><h3>Category</h3><span class="req must">Required</span></div>
+          <div class="row2">
+            <label class="f" for="catPen">HH Penetration (HHP)
+              <span class="unit"><input type="number" id="catPen" value="70" min="0.1" max="100" step="0.1"><span class="u">%</span></span>
+            </label>
+            <label class="f" for="catFreq">Purchase Frequency
+              <span class="unit"><input type="number" id="catFreq" value="5" min="0.1" step="0.1"><span class="u">/yr</span></span>
+            </label>
+          </div>
+          <p class="source">HHP: % of households buying in 52 weeks. Purchase Frequency: how many times a buying household buys the category in 52 weeks (trips, not units).</p>
+          <p class="derived" id="iptCat">Interpurchase time: <strong>every 73 days</strong> (10.4 weeks). How often a typical household buys the category. Calculated from your data (365 ÷ Purchase Frequency).</p>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><h3>Brand</h3><span class="req">Optional</span></div>
+          <div class="row2">
+            <label class="f" for="brandPen">HH Penetration (HHP)
+              <span class="unit"><input type="number" id="brandPen" value="15" min="0" max="100" step="0.1"><span class="u">%</span></span>
+            </label>
+            <label class="f" for="brandFreq">Purchase Frequency
+              <span class="unit"><input type="number" id="brandFreq" value="2" min="0" step="0.1"><span class="u">/yr</span></span>
+            </label>
+          </div>
+          <p class="source">Shows how many in-market buyers choose your brand (its share of category trips).</p>
+        </div>
+
+        <div class="group">
+          <div class="group-title"><h3>Decision period</h3><span class="req must">Your choice</span></div>
+          <p class="defn">How long do your shoppers spend actively choosing before they buy? Pick the closest.</p>
+          <div class="chips" id="decChips">
+            <button type="button" class="chip" data-d="1">Grab and go · 1 day</button>
+            <button type="button" class="chip" data-d="3">Compare options · 3 days</button>
+            <button type="button" class="chip" data-d="7">Research first · 7 days</button>
+          </div>
+          <label class="f" for="dec">Or enter your own
+            <span class="unit"><input type="number" id="dec" value="1" min="0.5" max="365" step="0.5" style="padding-right:48px"><span class="u">days</span></span>
+          </label>
+          <p class="derived" id="decNote">Buyers buy every <strong>73 days</strong> and decide over <strong>1 day</strong>, so about <strong>1.4%</strong> are in-market at any moment.</p>
+          <p class="source"><strong>Example:</strong> a haircut takes about 1.5 days to decide and happens every 30 days, so about 5% of people are in-market at any moment.</p>
+          <p class="source"><strong>Tip:</strong> routine buys like shampoo or cereal are usually decided within a day.</p>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button type="button" class="b primary" id="runBtn">Calculate</button>
+        <button type="button" class="b" id="resetBtn">Load sample data</button>
+        <span class="status" id="status" aria-live="polite">Sample data loaded: illustrative numbers, not real brand data. Replace with your own.</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- STEP 3: character, conflict, big idea -->
+  <section class="step" aria-labelledby="s3" id="step3" data-step="2">
+    <div class="step-head">
+      <span class="step-num" aria-hidden="true">2</span>
+      <div>
+        <div class="pq-pop pq-s2"><span class="pq-mark" aria-hidden="true">?</span><p class="pq-q" id="s3">How many of your buyers are <span class="a-out">Out-of-Market</span> versus <span class="a-in">In-Market</span>?</p></div>
+        <p class="runtag" id="runTag">Showing sample data.</p>
+        <p class="think"><span class="think-i" aria-hidden="true">?</span><span><strong>Think about it:</strong> where does most of your media money go today: to the few who are shopping, or to the many who aren't yet?</span></p>
+      </div>
+    </div>
+
+    <div class="stalebar" id="staleBar" hidden>
+      <span>Your inputs have changed. Click <strong>Calculate</strong> in step 1 to update these results.</span>
+    </div>
+
+    <div class="results" id="results">
+      <div class="card buyers" aria-labelledby="s3">
+        <div class="buyers-stats">
+          <div class="bstat out">
+            <div class="bnum" id="outPct">98.6%</div>
+            <div class="blabel">Out-of-Market <span class="pill out">Brand Building</span></div>
+            <p>Not shopping yet. Reach them now so your brand comes to mind when they do.</p>
+          </div>
+          <div class="bstat in">
+            <div class="bnum" id="inPct">1.4%</div>
+            <div class="blabel">In-Market <span class="pill in">Performance</span></div>
+            <p>Shopping right now. Every brand is fighting for them.</p>
+            <p class="brandwin" id="brandWin"></p>
+          </div>
+        </div>
+        <div class="buyers-viz">
+          <div class="eyebrow">Every 1,000 category buyers, right now</div>
+          <svg id="dotSvg" viewBox="0 0 400 250" role="img" aria-label="1,000 category buyers by buyer type"></svg>
+          <div class="vizkey"><span class="key"><span class="dot" style="background:var(--national)"></span>Out-of-Market</span><span class="key"><span class="dot" style="background:var(--instore)"></span>In-Market</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVIDENCE: bridge from the buyer split (Section 2) to the budget (Section 3) -->
+  <section class="step principle" aria-label="The evidence behind the split">
+    <details class="pr-det" id="prTwo">
+    <summary class="pr-head"><span class="pr-num">Principle 2 of 2</span><span class="ptag" title="Les Binet &amp; Peter Field: the most effective campaigns put about 60% into brand building and 40% into sales activation."><b>60:40</b>Binet &amp; Field's rule</span><span class="tog"><span class="sr">Show the evidence</span></span><span class="pr-tease" id="prTease">The most effective campaigns split about 60:40.</span></summary>
+    <div class="card evidence">
+      <div class="ev-body" id="whyNote"></div>
+      <div class="sx-wrap">
+        <p class="sx-lead" id="sxLead" hidden><span id="sxPick"></span></p>
+        <div class="tbl">
+          <table class="sx">
+            <thead><tr><th scope="col">Sector</th><th scope="col"><span class="c-out">Brand Building</span> : <span class="c-in">Performance</span></th><th scope="col" class="sx-r">Optimum</th><th scope="col" class="sx-src">Source</th></tr></thead>
+            <tbody>
+            <tr data-sec="all"><th scope="row">All for-profit cases</th><td><span class="sx-bar" style="--p:0.62" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">62</b><span class="c">:</span><b class="npf">38</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="fin"><th scope="row">Financial services</th><td><span class="sx-bar" style="--p:0.8" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">80</b><span class="c">:</span><b class="npf">20</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="dur"><th scope="row">Non-automotive durables</th><td><span class="sx-bar" style="--p:0.69" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">69</b><span class="c">:</span><b class="npf">31</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="onl"><th scope="row">Online or subscription sales</th><td><span class="sx-bar" style="--p:0.74" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">74</b><span class="c">:</span><b class="npf">26</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="ret"><th scope="row">Retail</th><td><span class="sx-bar" style="--p:0.64" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">64</b><span class="c">:</span><b class="npf">36</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="fmcg"><th scope="row">FMCG / CPG</th><td><span class="sx-bar" style="--p:0.6" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">60</b><span class="c">:</span><b class="npf">40</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="oth"><th scope="row">Other services</th><td><span class="sx-bar" style="--p:0.51" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">51</b><span class="c">:</span><b class="npf">49</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="trv"><th scope="row">Travel, restaurants, media</th><td><span class="sx-bar" style="--p:0.48" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">48</b><span class="c">:</span><b class="npf">52</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="b2b"><th scope="row">B2B</th><td><span class="sx-bar" style="--p:0.46" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">46</b><span class="c">:</span><b class="npf">54</b></td><td class="sx-src">B2B Institute 2019*</td></tr>
+            <tr data-sec="npo"><th scope="row">Not-for-profit</th><td><span class="sx-bar" style="--p:0.44" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">44</b><span class="c">:</span><b class="npf">56</b></td><td class="sx-src">IPA 2018</td></tr>
+            <tr data-sec="new"><th scope="row">Brands in their first 1 to 2 years</th><td><span class="sx-bar" style="--p:0.35" aria-hidden="true"></span></td><td class="sx-r"><b class="nbb">35</b><span class="c">:</span><b class="npf">65</b></td><td class="sx-src">IPA 2018</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sx-note">Every sector has a balance point: going too far either way lowers results. IPA 2018 = Binet &amp; Field, <em>Effectiveness in Context</em> (IPA, 2018), as reported in published summaries. *B2B comes from a separate study, Binet &amp; Field for The B2B Institute (LinkedIn, 2019), with a smaller sample.</p>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- STEP 4: resolution -->
+  <section class="step" aria-labelledby="s4" data-step="3">
+    <div class="step-head">
+      <span class="step-num" aria-hidden="true">3</span>
+      <div>
+        <div class="ptag-row"><span class="ptag" title="Les Binet &amp; Peter Field: the most effective campaigns put about 60% into brand building and 40% into sales activation."><b>60:40</b>Binet &amp; Field's rule</span></div>
+        <h2 id="s4">What does your current budget split look like?</h2>
+      </div>
+    </div>
+    <div class="results" id="results4">
+      <div class="card today" aria-labelledby="hToday">
+        <h3 class="subhead" id="hToday">Where are you today?</h3>
+        <p class="drag-lead">Drag this slider to estimate your current Media Investment split today</p>
+        <div class="split-slider">
+          <div class="sp-labels" aria-hidden="true"><span class="sp-bb"><b id="slBB">30%</b>Brand Building</span><span class="sp-pf">Performance<b id="slPF">70%</b></span></div>
+          <input type="range" id="todayBB" class="split-range" min="0" max="100" step="5" value="30" aria-label="Share of your media in Brand Building today" style="--p:.3">
+          <output id="todayOut" for="todayBB" hidden>30%</output>
+        </div>
+        <p class="hint" id="liNote">Not sure? Use the table below.</p>
+        <details class="adv li-details">
+          <summary>Work it out from your line items (optional)</summary>
+          <div class="tbl">
+            <table class="litable">
+              <thead><tr><th>Line item</th><th>Counts as</th><th>Spend</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Linear TV</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-tv" data-t="bb" min="0" step="any" placeholder="0" aria-label="Linear TV spend"></span></td></tr>
+                <tr><th scope="row">Connected TV (CTV)</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-ctv" data-t="bb" min="0" step="any" placeholder="0" aria-label="Connected TV (CTV) spend"></span></td></tr>
+                <tr><th scope="row">Online Video</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-olv" data-t="bb" min="0" step="any" placeholder="0" aria-label="Online Video spend"></span></td></tr>
+                <tr><th scope="row">Social: Reach and Awareness</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-socr" data-t="bb" min="0" step="any" placeholder="0" aria-label="Social: Reach and Awareness spend"></span></td></tr>
+                <tr><th scope="row">Audio</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-aud" data-t="bb" min="0" step="any" placeholder="0" aria-label="Audio spend"></span></td></tr>
+                <tr><th scope="row">Out-of-Home (OOH)</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-ooh" data-t="bb" min="0" step="any" placeholder="0" aria-label="Out-of-Home (OOH) spend"></span></td></tr>
+                <tr><th scope="row">Offsite Retail Media (Prospecting)</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-rmo" data-t="bb" min="0" step="any" placeholder="0" aria-label="Offsite Retail Media (Prospecting) spend"></span></td></tr>
+                <tr><th scope="row">Sponsorships</th><td><span class="pill out">Brand Building</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-spon" data-t="bb" min="0" step="any" placeholder="0" aria-label="Sponsorships spend"></span></td></tr>
+                <tr><th scope="row">Onsite Retail Search</th><td><span class="pill in">Performance</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-sp" data-t="pf" min="0" step="any" placeholder="0" aria-label="Onsite Retail Search spend"></span></td></tr>
+                <tr><th scope="row">Offsite Retail Media (Retargeting)</th><td><span class="pill in">Performance</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-rmr" data-t="pf" min="0" step="any" placeholder="0" aria-label="Offsite Retail Media (Retargeting) spend"></span></td></tr>
+                <tr><th scope="row">Google Search</th><td><span class="pill in">Performance</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-srch" data-t="pf" min="0" step="any" placeholder="0" aria-label="Google Search spend"></span></td></tr>
+                <tr><th scope="row">Social: Traffic and Conversion</th><td><span class="pill in">Performance</span></td><td><span class="unit pre"><span class="u">$</span><input type="number" class="li" id="li-socc" data-t="pf" min="0" step="any" placeholder="0" aria-label="Social: Traffic and Conversion spend"></span></td></tr>
+              </tbody>
+              <tfoot id="liFoot">
+                <tr class="li-sub"><th scope="row">Brand Building total</th><td id="liBBp" class="li-pc c-out">–</td><td id="liBB" class="li-amt">$0</td></tr>
+                <tr class="li-sub"><th scope="row">Performance total</th><td id="liPFp" class="li-pc c-in">–</td><td id="liPF" class="li-amt">$0</td></tr>
+                <tr class="li-tot"><th scope="row">Your split today</th><td id="liSplit" class="li-pc">Enter spend above</td><td id="liTot" class="li-amt">$0</td></tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="hint">Each line is classified by who it reaches, not who sells it. Offsite Retail Media (Prospecting) reaches people not shopping yet, so it counts as Brand Building. Retargeting reaches people who are already shopping, so it counts as Performance.</p>
+        </details>
+        <div class="ideal-row" aria-live="polite">
+          <div class="tsaw">
+            <div class="eyebrow tsaw-eb">Your mix today vs. your ideal</div>
+            <svg id="tSaw" viewBox="0 0 640 240" role="img" aria-label="See-saw of your mix today against your ideal"></svg>
+            <div class="rg-axis tsaw-axis" id="tAxis"><span class="ax ax-bb">◀ More Brand Building</span><span class="ax ax-pf">More Performance ▶</span></div>
+            <div class="ss-key" id="tKey"></div>
+          </div>
+          <p class="gapmsg" id="gapMsg"></p>
+          <p class="hint">Buyer split: John Dawes · Starting ratio: Binet &amp; Field · How far it moves: our rule of thumb</p>
+        </div>
+      </div>
+
+      <p class="warn" id="warn" hidden></p>
+
+
+
+
+      <div class="card" aria-labelledby="hScore">
+        <h3 class="subhead" id="hScore">How to judge each side</h3>
+        <p class="hint" style="margin:0 0 12px">Judge each side on its own job.</p>
+        <div class="score">
+          <div class="scol out"><span class="pill out">Brand Building</span><ul><li>Reach in your target audience</li><li id="kpiHHP">Household penetration (HHP), the same number you entered in step 1</li><li>Branded search and share of search</li><li>Brand awareness, prompted and unprompted</li></ul></div>
+          <div class="scol in"><span class="pill in">Performance</span><ul><li>ROAS and incremental ROAS</li><li>Cost per acquisition</li><li>Conversion rate</li><li>Retail media sales</li><li>Purchase frequency and spend per trip among your buyers</li></ul></div>
+        </div>
+        <p class="scoreall"><strong>Overall:</strong> total sales ÷ total marketing spend (marketing efficiency ratio). It shows whether the mix as a whole is working.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" aria-label="Method">
+      <div class="card">
+        <details class="howto" id="howto">
+          <summary><h2>How it's calculated</h2><span class="tog">Show method</span></summary>
+          <ol class="steps">
+            <li><div><h3>Find how often the category is bought</h3><p id="step1">Interpurchase time = 365 days ÷ Purchase Frequency.</p></div></li>
+            <li><div><h3>Find the share of buyers in-market</h3><p>John Dawes' 95:5 math: the share in-market is the buying window as a share of the time between purchases. Dawes uses a quarter for B2B, where buying takes about that long: if buyers switch every 5 years, about 5% are in-market in any quarter. In CPG the buying window is the decision period, so the same math gives the share deciding right now.</p>
+              <code class="f">in-market % = decision period ÷ interpurchase time</code></div></li>
+            <li><div><h3>Set the buyer split</h3><p>Out-of-market buyers are reached by Brand Building, in-market buyers by Performance. The buyer split is the upper limit for Brand Building, not the budget.</p></div></li>
+            <li><div><h3>Set the budget</h3><p>Dawes gives no budget split. The Binet &amp; Field benchmark is the budget expression of 95:5: in-market buyers are fewer, but each costs more to win, so Performance gets more than its share of buyers. The starting point is your sector's optimum from Binet &amp; Field (60:40 if no sector is chosen). From there, the out-of-market share moves it on a sliding scale: at 90% it stays at the starting point; toward 100% it leans up to 5 points further into Brand Building, while share of voice, branded search and awareness keep rising; toward 80% or below, Performance takes up to 5 points more. With no sector chosen, the lean is up to 10 points. The sliding scale is our rule of thumb, not part of Dawes' or Binet &amp; Field's research. The advice then depends on the gap: within the range, hold; up to 5 points, a reasonable gap; 6 to 15 points, close it this planning cycle; more than 15, move 10 to 15 points first, measure share of search, share of voice and market share, and step again. Test each step with MMM and incrementality.</p></div></li>
+          </ol>
+          <div class="chartbox">
+            <h3>In-market % varies by category</h3>
+            <div class="tbl" style="margin-top:8px"><table id="refTbl"></table></div>
+            <p class="hint" style="margin-top:8px">The first row is Dawes' own example (a quarter's buying window, every 5 years). The other rows are illustrative, not research figures. Months counted as 30 days. Long decisions pair with long cycles, so in-market stays small. The highlighted row uses your inputs.</p>
+          </div>
+          <ul class="assume">
+            <li>Inputs are 52-week panel figures. Rolling reads (52 weeks ending each quarter) work the same way.</li>
+            <li>Buying is assumed steady across the year. Strongly seasonal categories need weekly data.</li>
+            <li>The decision period is a judgment. Use shopper research to set it where you have it.</li>
+            <li>This is a starting point for planning. Validate it with MMM and incrementality tests before locking budgets.</li>
+          </ul>
+          <div class="sources">Sources:
+            <a href="https://business.linkedin.com/advertise/resources/b2b-institute/how-b2b-brands-grow" target="_blank" rel="noopener">How B2B Brands Grow (Dawes, B2B Institute)</a> ·
+            <a href="https://johndawes.info/the-955-rule/" target="_blank" rel="noopener">The 95:5 Rule (Dawes)</a> ·
+            <a href="https://ipa.co.uk/media/14463/long_and_short_of_it_presentation_final_030424.pdf" target="_blank" rel="noopener">The Long and the Short of It (Binet &amp; Field, IPA)</a> ·
+            <a href="https://www.alexmurrell.co.uk/summaries/les-binet-and-peter-field-the-long-and-the-short-of-it" target="_blank" rel="noopener">Summary of The Long and the Short of It</a>
+          </div>
+        </details>
+      </div>
+  </section>
+  <footer class="sitefoot">
+    <p><strong>Method.</strong> In-market share follows John Dawes' 95:5 rule (Ehrenberg-Bass Institute / The B2B Institute). Budget benchmarks come from Binet &amp; Field's analysis of the IPA Effectiveness Databank. Sample inputs are illustrative only.</p>
+    <p>Built by Anand Aravamudhan. Free to use and share. <a href="https://www.linkedin.com/in/aravamudhananand/" target="_blank" rel="noopener">Connect on LinkedIn</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const SAMPLE = { budget: 100, label: "", catPen: 70, catFreq: 5, brandPen: 15, brandFreq: 2, dec: 1 };
+  const fmt = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : "–");
+  const pct = (x, d = 1) => fmt(x * 100, d) + "%";
+  const p0 = (x) => Math.round(x * 100) + "%";
+  const wk = (n) => n + (n === 1 ? " week" : " weeks");
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let ssRaf = 0, ssObs = null;
+  const n1 = (v) => v.toFixed(1);
+  // Safari ignores var() inside SVG presentation attributes, so move those values into inline styles.
+  const SVG_VAR_ATTRS = ["fill", "stroke", "font-family"];
+  function fixSvgVars(root) {
+    if (!root) return;
+    root.querySelectorAll("svg [fill*='var('], svg [stroke*='var('], svg [font-family*='var('], svg[fill*='var(']").forEach(el => {
+      SVG_VAR_ATTRS.forEach(a => {
+        const v = el.getAttribute(a);
+        if (v && v.indexOf("var(") !== -1) { el.style.setProperty(a, v); el.removeAttribute(a); }
+      });
+    });
+  }
+  // In-market: a shopping cart that hops. Out-of-market: a dot with a slow glow (memories building).
+  const bagDot = (x, y, r, fill, d) => {
+    const k = r / 8.5;
+    return `<g class="hop" style="animation-delay:${d}ms"><circle cx="${n1(x)}" cy="${n1(y)}" r="${r}" fill="${fill}"/>` +
+      `<path d="M${n1(x - 4.8 * k)},${n1(y - 3.6 * k)} h${n1(1.6 * k)} l${n1(1.3 * k)},${n1(5.4 * k)} h${n1(5.2 * k)} l${n1(0.9 * k)},${n1(-3.6 * k)} h${n1(-6.6 * k)}" fill="none" stroke="#ffffff" stroke-width="${(1.4 * k).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<circle cx="${n1(x - 1 * k)}" cy="${n1(y + 3.9 * k)}" r="${n1(1.05 * k)}" fill="#ffffff"/><circle cx="${n1(x + 2.6 * k)}" cy="${n1(y + 3.9 * k)}" r="${n1(1.05 * k)}" fill="#ffffff"/></g>`;
+  };
+  const glowDot = (x, y, r, fill, d) => `<circle class="halo" cx="${n1(x)}" cy="${n1(y)}" r="${n1(r * 1.45)}" fill="${fill}" style="animation-delay:${d}ms"/><circle cx="${n1(x)}" cy="${n1(y)}" r="${r}" fill="${fill}"/>`;
+  // Out-of-market in the Step 1 diagram: a soft-glowing bubble with a loudspeaker (reached by Brand Building), hopping gently.
+  const speakerDot = (x, y, r, fill, d, hf = 1.4) => {
+    const k = r / 8.5;
+    return `<g class="hop slow" style="animation-delay:${d}ms"><circle class="halo" cx="${n1(x)}" cy="${n1(y)}" r="${n1(r * hf)}" fill="${fill}" style="animation-delay:${d}ms"/><circle cx="${n1(x)}" cy="${n1(y)}" r="${r}" fill="${fill}"/>` +
+      `<path d="M${n1(x - 4.4 * k)},${n1(y - 1.6 * k)} h${n1(2 * k)} l${n1(2.6 * k)},${n1(-2.4 * k)} v${n1(8 * k)} l${n1(-2.6 * k)},${n1(-2.4 * k)} h${n1(-2 * k)} Z" fill="#ffffff"/>` +
+      `<path d="M${n1(x + 2 * k)},${n1(y - 2.2 * k)} q${n1(1.8 * k)},${n1(2.2 * k)} 0,${n1(4.4 * k)} M${n1(x + 3.6 * k)},${n1(y - 3.8 * k)} q${n1(3 * k)},${n1(3.8 * k)} 0,${n1(7.6 * k)}" fill="none" stroke="#ffffff" stroke-width="${(1.2 * k).toFixed(2)}" stroke-linecap="round"/></g>`;
+  };
+  const speakerIcon = (fill) => `<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${speakerDot(10, 10, 9, fill, 0).replace('class="hop slow"', '').replace('class="halo"', 'opacity="0"')}</svg>`;
+  const bagIcon = (fill) => `<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${bagDot(10, 10, 9, fill, 0).replace('class="hop"', '')}</svg>`;
+
+  const pIm = (x) => (x > 0 && x < 0.0005) ? "<0.1%" : (x < 1 && x >= 0.9995) ? ">99.9%" : (x < 0.1 || x > 0.9) ? pct(x, 1) : p0(x);
+  // Out-of-market is shown as the complement of the displayed in-market figure, so the two always add to 100%.
+  const pOut = (im) => { const a = pIm(im); if (a === "<0.1%") return ">99.9%"; if (a === ">99.9%") return "<0.1%"; const d = a.indexOf(".") !== -1 ? 1 : 0; return (100 - parseFloat(a)).toFixed(d) + "%"; };
+  // Numbers as entered (up to 2 decimals), so the arithmetic shown always matches the arithmetic used.
+  const nf = (n) => String(parseFloat(n.toFixed(2)));
+  const dy = (n) => nf(n) + (n === 1 ? " day" : " days");
+  // Round half away from zero, with float noise removed, so the swing is symmetric either side of 90%.
+  const rHalf = (x) => { const y = Math.round(x * 1e6) / 1e6; return Math.sign(y) * Math.round(Math.abs(y)); };
+
+  const SECTORS = {all: 62, fin: 80, dur: 69, onl: 74, ret: 64, fmcg: 60, oth: 51, trv: 48, b2b: 46, npo: 44, new: 35};
+  const SECNAME = {all: "All for-profit cases", fin: "Financial services", dur: "Non-automotive durables", onl: "Online or subscription sales", ret: "Retail", fmcg: "FMCG / CPG", oth: "Other services", trv: "Travel, restaurants, media", b2b: "B2B", npo: "Not-for-profit", new: "Brands in their first 1 to 2 years"};
+  function read() {
+    const num = (id) => parseFloat($(id).value);
+    return {
+      label: ($("label").value || "").trim(),
+      catPen: num("catPen") / 100, catFreq: num("catFreq"),
+      brandPen: (num("brandPen") || 0) / 100, brandFreq: num("brandFreq") || 0,
+      dec: num("dec"),
+      bench: (SECTORS[$("label").value] || 60) / 100,
+      benchName: $("label").value ? (SECTORS[$("label").value] + ":" + (100 - SECTORS[$("label").value])) : "60:40",
+      sector: $("label").value,
+      offsite: 0,
+      budget: 100,
+    };
+  }
+  const key = (s) => JSON.stringify(s);
+
+  function validate(s) {
+    const bad = [];
+    const mark = (id, isBad) => $(id).setAttribute("aria-invalid", String(isBad));
+    const a = !(s.catPen > 0 && s.catPen <= 1); mark("catPen", a); if (a) bad.push("category HHP (0.1–100%)");
+    const b = !(s.catFreq > 0); mark("catFreq", b); if (b) bad.push("category Purchase Frequency (above 0)");
+    const c = s.brandPen < 0 || s.brandPen > s.catPen; mark("brandPen", c); if (c) bad.push("brand HHP (0 up to the category's)");
+    // A brand's trips are a subset of the category's: brand HHP × frequency can't exceed category HHP × frequency.
+    const d = s.brandFreq < 0 || (!a && !b && !c && s.brandPen > 0 && s.brandPen * s.brandFreq > s.catPen * s.catFreq * (1 + 1e-9)); mark("brandFreq", d); if (d) bad.push("brand Purchase Frequency (0 or more; brand HHP × frequency can't exceed the category's)");
+    const ipt = s.catFreq > 0 ? 365 / s.catFreq : Infinity;
+    const e = !(s.dec > 0 && s.dec < ipt); mark("dec", e);
+    if (e) bad.push(Number.isFinite(ipt) ? `decision period (above 0 and shorter than the ${Math.round(ipt)}-day interpurchase time)` : "decision period (above 0)");
+    return bad;
+  }
+
+  // Dawes' 95:5 rule: a buyer is in-market only while deciding.
+  // In-market % of category buyers = decision period ÷ interpurchase time.
+  function compute(s) {
+    const o = {};
+    o.iptDays = 365 / s.catFreq;
+    o.im = Math.min(s.dec / o.iptDays, 1);
+    o.oom = 1 - o.im;
+    o.audNat = o.oom;
+    o.benchNat = s.bench;
+    o.headNat = Math.round(o.audNat * 100) / 100;
+    // The budget (and channel booking) follows the benchmark: the budget expression of 95:5.
+    const inShare = 1 - o.benchNat;
+    o.retailLine = s.offsite > 0 ? inShare / (1 - s.offsite) : inShare;
+    o.retailLineOver = o.retailLine > 1;
+    o.retailLine = Math.min(o.retailLine, 1);
+    o.offsitePts = o.retailLine - inShare;
+    o.hasBrand = s.brandPen > 0 && s.brandFreq > 0;
+    // Share of in-market buyers choosing the brand = brand's share of category purchase occasions.
+    if (o.hasBrand) o.brandShare = Math.min((s.brandPen * s.brandFreq) / (s.catPen * s.catFreq), 1);
+    return o;
+  }
+
+  function renderDots(s, o, animate) {
+    // 1,000 buyers: in-market buyers scattered among the out-of-market majority.
+    let nIn = Math.round(o.im * 1000);
+    if (o.im > 0 && nIn === 0) nIn = 1;
+    let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    const idx = Array.from({ length: 1000 }, (_, i) => i);
+    for (let i = 999; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+    const inSet = new Set(idx.slice(0, nIn));
+    let outs = "", ins = "";
+    for (let i = 0; i < 1000; i++) {
+      const x = 5 + (i % 40) * 10, y = 5 + Math.floor(i / 40) * 10;
+      if (inSet.has(i)) ins += `<g class="inb" style="animation-delay:${(i * 37) % 2400}ms"><circle cx="${x}" cy="${y}" r="4.6" fill="var(--instore)"/><circle class="ring" cx="${x}" cy="${y}" r="4.6" fill="none" stroke="var(--instore)" stroke-width="1.4"/></g>`;
+      else outs += `<circle cx="${x}" cy="${y}" r="3.4"/>`;
+    }
+    const svg = $("dotSvg");
+    svg.innerHTML = `<g class="outs" fill="var(--national)">${outs}</g><g class="ins">${ins}</g>`;
+    if (animate && !reduced) { svg.classList.remove("show"); void svg.getBoundingClientRect(); svg.classList.add("show"); }
+    $("outPct").textContent = pOut(o.im);
+    $("inPct").textContent = pIm(o.im);
+    $("brandWin").innerHTML = o.hasBrand ? `Of the ${pIm(o.im)} shopping right now, about <strong>${p0(o.brandShare)}</strong> pick your brand (your share of category trips).` : "";
+    $("brandWin").hidden = !o.hasBrand;
+  }
+
+  // Illustrative examples from the 95:5 explainer: [category, decision period (days), interpurchase time (days)].
+  // Months are counted as 30 days. In-market % is calculated, not typed in.
+  const REF = [
+    ["Dawes' original example (B2B)", [["Business bank or law firm", 90, 1800]]],
+    ["Everyday purchases", [["Shampoo", 1, 15], ["Wet cat food", 1, 20], ["Haircut", 1.5, 30], ["Breakfast cereal", 1, 40]]],
+    ["Considered purchases", [["Cable provider", 60, 900], ["Banking", 30, 990]]],
+  ];
+  const every = (days) => days >= 365 ? `${Math.round(days / 30)} months` : dy(Math.round(days));
+  function renderRef(s, o) {
+    const row = (name, d, ipt, im, hl) => `<tr class="${hl ? "hl" : ""}"><td>${name}</td><td class="num">${dy(d)}</td><td class="num">${hl && ipt >= 365 ? Math.round(ipt * 12 / 365) + " months" : every(ipt)}</td><td class="num">${im > 0 && im < 0.0005 ? "<0.1%" : pct(im)}</td></tr>`;
+    const group = (title) => `<tr><td colspan="4" style="padding-top:14px;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600">${title}</td></tr>`;
+    $("refTbl").innerHTML = `<thead><tr><th>Category</th><th class="num">Decision period</th><th class="num">Buys every</th><th class="num">In-market</th></tr></thead><tbody>` +
+      REF.map(([title, rows]) => group(title) + rows.map(r => row(r[0], r[1], r[2], r[1] / r[2], false)).join("")).join("") +
+      group("Your category") + row(`Your category (your inputs)`, s.dec, o.iptDays, o.im, true) + `</tbody>`;
+  }
+
+
+  // STEP 3 extras: today vs benchmark, the path, live without re-running.
+  let lastS = null, lastO = null;
+  function todayShare() {
+    let bb = 0, pf = 0;
+    document.querySelectorAll(".li").forEach(el => { const v = parseFloat(el.value); if (v > 0) { if (el.dataset.t === "bb") bb += v; else pf += v; } });
+    const tot = bb + pf;
+    if (tot > 0) {
+      const sh = Math.round(bb / tot * 100);
+      $("todayBB").value = String(Math.round(sh / 5) * 5); $("todayBB").disabled = true;
+      $("liNote").textContent = `From your line items: ${sh}% Brand Building. Clear them to use the slider.`;
+      return { sh, tot };
+    }
+    $("todayBB").disabled = false;
+    $("liNote").textContent = "Not sure? Use the table below.";
+    return { sh: parseInt($("todayBB").value, 10), tot: 0 };
+  }
+
+  // Today's see-saw: solid beam = your mix today; dashed beam = your ideal; arrow = the move.
+  let tsPose = null, tsRaf = 0; const tsIntro = { done: false, obs: null, t: 50, g: 50 };
+  function drawTodaySaw(t, g, tier, toBB, s, o, rLo, rHi) {
+    const svg = $("tSaw"); if (!svg) return;
+    const cx = 320, cy = 150, half = 250, tilt = (v) => (50 - v) * 0.9, blk = (sh) => 40 + sh * 0.8, R = half + 28, rad = (d) => d * Math.PI / 180;
+    if (!svg.dataset.built) {
+      svg.innerHTML =
+        `<g id="tGhost"><rect x="${cx - half}" y="${cy - 6}" width="${half * 2}" height="12" rx="6" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="6 6"/></g>` +
+        `<g id="tBeam"><rect x="${cx - half}" y="${cy - 6}" width="${half * 2}" height="12" rx="6" fill="var(--ink-2)"/>` +
+        `<rect id="tPf" rx="8" fill="var(--instore)"/><text id="tPfT" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="24" fill="#ffffff"></text>` +
+        `<rect id="tBb" rx="8" fill="var(--national)"/><text id="tBbT" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="24" fill="#ffffff"></text></g>` +
+        `<g id="tArrow"><path id="tArc" fill="none" stroke-width="3.5" stroke-linecap="round"/><path id="tHead" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>` +
+        `<path d="M${cx},${cy + 4} L${cx - 34},${cy + 74} L${cx + 34},${cy + 74} Z" fill="var(--ink-3)"/>` +
+        `<line x1="${cx - 120}" y1="${cy + 75}" x2="${cx + 120}" y2="${cy + 75}" stroke="var(--line)" stroke-width="2"/>`;
+      svg.dataset.built = "1"; fixSvgVars(svg.parentNode);
+    }
+    const set = (id, a) => { const el = $(id); for (const k in a) el.setAttribute(k, a[k]); };
+    const pose = (v) => {
+      const pfS = blk(100 - v), bbS = blk(v);
+      $("tBeam").setAttribute("transform", `rotate(${n1(tilt(v))} ${cx} ${cy})`);
+      set("tBb", { x: n1(cx - half + 8), y: n1(cy - 6 - bbS), width: n1(bbS), height: n1(bbS) });
+      set("tBbT", { x: n1(cx - half + 8 + bbS / 2), y: n1(cy - 6 - bbS / 2 + 8) });
+      set("tPf", { x: n1(cx + half - 8 - pfS), y: n1(cy - 6 - pfS), width: n1(pfS), height: n1(pfS) });
+      set("tPfT", { x: n1(cx + half - 8 - pfS / 2), y: n1(cy - 6 - pfS / 2 + 8) });
+      $("tPfT").textContent = `${Math.round(100 - v)}%`; $("tBbT").textContent = `${Math.round(v)}%`;
+    };
+    // ghost at the ideal
+    $("tGhost").setAttribute("transform", `rotate(${n1(tilt(g))} ${cx} ${cy})`);
+    $("tGhost").setAttribute("opacity", tier === "ok" ? "0" : "1");
+    // arrow from today to ideal, on the side that gains weight
+    const col = toBB ? "var(--national)" : "var(--instore)";
+    if (tier === "ok" || Math.abs(g - t) < 2) { $("tArrow").setAttribute("opacity", "0"); }
+    else {
+      const a0 = tilt(t), a1 = tilt(g);
+      const pt = (deg) => toBB ? [cx - R * Math.cos(rad(deg)), cy - R * Math.sin(rad(deg))] : [cx + R * Math.cos(rad(deg)), cy + R * Math.sin(rad(deg))];
+      const [x0, y0] = pt(a0), [x1, y1] = pt(a1), ang = Math.atan2(y1 - y0, x1 - x0), hl = 11;
+      $("tArc").setAttribute("d", `M${n1(x0)},${n1(y0)} A${R},${R} 0 0 ${toBB ? 0 : 1} ${n1(x1)},${n1(y1)}`);
+      $("tHead").setAttribute("d", `M${n1(x1 - hl * Math.cos(ang - 0.5))},${n1(y1 - hl * Math.sin(ang - 0.5))} L${n1(x1)},${n1(y1)} L${n1(x1 - hl * Math.cos(ang + 0.5))},${n1(y1 - hl * Math.sin(ang + 0.5))}`);
+      ["tArc", "tHead"].forEach(id => $(id).style.stroke = toBB ? "var(--national)" : "var(--instore)");
+      $("tArrow").setAttribute("opacity", "1");
+    }
+    // Animate: first time the see-saw scrolls into view it tips from level onto today's mix,
+    // the ideal fades in, the arrow draws, and the beam rocks toward the ideal and back once.
+    // After that, every slider move tweens with a small settle.
+    const ghost = $("tGhost"), arrow = $("tArrow");
+    const tween = (to, dur, ease, done) => {
+      cancelAnimationFrame(tsRaf);
+      const from = tsPose == null ? 50 : tsPose, t0 = performance.now();
+      if (reduced || !dur) { pose(to); tsPose = to; done && done(); return; }
+      const stepF = (now) => { const k = Math.min(1, (now - t0) / dur), v = from + (to - from) * ease(k); pose(v); tsPose = v; if (k < 1) tsRaf = requestAnimationFrame(stepF); else done && done(); };
+      tsRaf = requestAnimationFrame(stepF);
+    };
+    const settle = (x) => 1 + 2.4 * Math.pow(x - 1, 3) + 1.4 * Math.pow(x - 1, 2);
+    const inOut = (x) => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+    const showExtras = () => { ghost.classList.add("in"); arrow.classList.remove("draw"); void arrow.getBoundingClientRect(); arrow.classList.add("draw"); };
+    if (!tsIntro.done && !reduced && "IntersectionObserver" in window) {
+      tsIntro.args = true; pose(50); tsPose = 50; ghost.classList.remove("in"); arrow.classList.remove("draw");
+      if (!tsIntro.obs) {
+        tsIntro.obs = new IntersectionObserver((ents) => {
+          if (!ents.some(en => en.isIntersecting)) return;
+          tsIntro.obs.disconnect(); tsIntro.done = true;
+          const cur = tsIntro.t, goal = tsIntro.g;
+          tween(cur, 1100, settle, () => {
+            showExtras();
+            if (Math.abs(goal - cur) >= 2) setTimeout(() => tween(cur + (goal - cur) * 0.6, 700, inOut, () => setTimeout(() => tween(cur, 700, inOut), 250)), 650);
+          });
+        }, { threshold: 0.55 });
+        tsIntro.obs.observe(svg);
+      }
+      tsIntro.t = t; tsIntro.g = g;
+    } else {
+      tsIntro.done = true;
+      tween(t, 420, settle);
+      ghost.classList.add("in"); arrow.classList.add("draw");
+    }
+    // direction pills + key
+    const ax = $("tAxis"); ax.classList.toggle("set", tier !== "ok");
+    ax.querySelector(".ax-bb").classList.toggle("on", tier !== "ok" && toBB);
+    ax.querySelector(".ax-pf").classList.toggle("on", tier !== "ok" && !toBB);
+    $("tKey").innerHTML = `<span class="key"><span class="ln-solid"></span>Today ${t}:${100 - t}</span>` + (tier === "ok" ? "" : `<span class="key"><span class="ln-dash"></span>Ideal ${g}:${100 - g}</span>`);
+    $("tSaw").setAttribute("aria-label", `See-saw: today ${t}:${100 - t}, ideal ${g}:${100 - g}.`);
+  }
+  function renderGap() {
+    if (!lastS) return;
+    const s = lastS, o = lastO, B = s.budget;
+    const money = (v) => v >= 999500 ? `$${parseFloat((v / 1e6).toFixed(2))}M` : v >= 1e4 ? `$${Math.round(v / 1e3).toLocaleString()}K` : `$${Math.round(v).toLocaleString()}`;
+    const ts = todayShare(), t = ts.sh, anchor = Math.round(o.benchNat * 100);
+    // Ideal range: the anchor plus a sliding swing set by step 2's out-of-market share.
+    // 90% = no swing; toward 100% leans up to +sw into Brand Building; toward 80% (or below) up to -sw into Performance.
+    const sw = s.sector ? 5 : 10, lean = Math.max(-1, Math.min(1, (o.oom - 0.9) / 0.1));
+    const swingTo = Math.max(30, Math.min(85, anchor + rHalf(sw * lean)));
+    const rLo = Math.min(anchor, swingTo), rHi = Math.max(anchor, swingTo);
+    const g = Math.min(rHi, Math.max(rLo, t));
+    $("todayOut").textContent = t + "%";
+    $("todayBB").style.setProperty("--p", String(t / 100)); $("slBB").textContent = t + "%"; $("slPF").textContent = (100 - t) + "%";
+    const bar = (v) => `<span style="flex-grow:${Math.max(v, 0.5)}"></span><span style="flex-grow:${Math.max(100 - v, 0.5)}"></span>`;
+
+
+    // Gap tiers: how far today's mix sits from the ideal range decides the advice.
+    //  0 → on track · 1–5 → close (reasonable) · 6–15 → moderate (close it this cycle) · 16+ → wide (step 10–15 pts, measure, repeat).
+    const d = g - t, pts = Math.abs(d);
+    const toBB = d > 0;
+    const tier = pts === 0 ? "ok" : pts <= 5 ? "close" : pts <= 15 ? "mid" : "wide";
+    const amt = (p) => ts.tot > 0 ? money(p / 100 * ts.tot) : `${p} points`;
+    const from = toBB ? "Performance" : "Brand Building";
+    const into = toBB ? `<span class="a-out">Brand Building</span>` : `<span class="a-in">Performance</span>`;
+    const why = toBB ? `You're under-investing in the ${pOut(o.im)} of buyers who aren't shopping yet.` : `You're above your ideal range, so make sure you still win the ${pIm(o.im)} shopping now.`;
+    const measures = toBB ? ["Share of search", "Share of voice", "Market share"] : ["Incremental sales (ROAS)", "Conversion rate", "Market share"];
+    const loop = (step) => `<div class="gm-loop"><span class="gl-s"><em>1</em>Shift ${step}</span><span class="gl-a">→</span><span class="gl-s"><em>2</em>Measure<small>${measures.join(" · ")}</small></span><span class="gl-a">→</span><span class="gl-s"><em>3</em>Step again<small>if results move the right way</small></span><span class="gl-back" title="Repeat">↺</span></div>`;
+    const range = rLo === rHi ? `${rLo}:${100 - rLo}` : `${rLo}:${100 - rLo} to ${rHi}:${100 - rHi}`;
+    const gm = $("gapMsg");
+    gm.dataset.dir = tier === "ok" || tier === "close" ? "ok" : toBB ? "bb" : "pf";
+    gm.dataset.eye = tier === "ok" ? "You're on track" : "Your next move";
+    drawTodaySaw(t, g, tier, toBB, s, o, rLo, rHi);
+    if (tier === "ok") {
+      gm.innerHTML = `Hold the mix.<span class="gm-sub">Ideal range: ${range}</span>`;
+    } else if (tier === "close") {
+      gm.innerHTML = `Reasonable. Hold, and nudge toward ${into}.<span class="gm-sub">Ideal range: ${range}</span>`;
+    } else if (tier === "mid") {
+      gm.innerHTML = `Move ${amt(pts)} into ${into} this cycle.${loop(amt(pts))}`;
+    } else {
+      const lo = 10, hi = Math.min(15, pts);
+      const step = ts.tot > 0 ? `${money(lo / 100 * ts.tot)}–${money(hi / 100 * ts.tot)}` : `${lo}–${hi} pts`;
+      gm.innerHTML = `Start with ${step} into ${into}.<span class="gm-sub">Too wide to close in one step.</span>${loop(step)}`;
+    }
+    $("kpiHHP").textContent = o.hasBrand ? `Household penetration (HHP): your brand is at ${pct(s.brandPen)} today. Track it rising.` : "Household penetration (HHP), the same number you enter in step 1";
+  }
+  $("todayBB").addEventListener("input", renderGap);
+  document.querySelectorAll(".li").forEach(el => el.addEventListener("input", renderGap));
+  // Line-item totals: calibrate today's Brand Building vs. Performance split at the foot of the table.
+  function updLiFoot() {
+    let bb = 0, pf = 0;
+    document.querySelectorAll(".li").forEach(el => { const v = parseFloat(el.value); if (v > 0) { if (el.dataset.t === "bb") bb += v; else pf += v; } });
+    const tot = bb + pf, usd = (v) => "$" + Math.round(v).toLocaleString();
+    const bp = tot > 0 ? Math.round(bb / tot * 100) : null;
+    $("liBB").textContent = usd(bb); $("liPF").textContent = usd(pf); $("liTot").textContent = usd(tot);
+    $("liBBp").textContent = bp === null ? "–" : bp + "%"; $("liPFp").textContent = bp === null ? "–" : (100 - bp) + "%";
+    $("liSplit").innerHTML = bp === null ? "Enter spend above" : `<span class="c-out">${bp}</span> : <span class="c-in">${100 - bp}</span>`;
+  }
+  document.querySelectorAll(".li").forEach(el => el.addEventListener("input", updLiFoot));
+  updLiFoot();
+
+  let lastKey = "", isSample = true;
+
+  function renderResults(s, o, animate) {
+    const notes = [];
+    const warn = $("warn"); warn.hidden = !notes.length; warn.textContent = notes.join(" ");
+
+    const B = s.budget;
+    const money = (v) => v >= 999500 ? `$${parseFloat((v / 1e6).toFixed(2))}M` : v >= 1e4 ? `$${Math.round(v / 1e3).toLocaleString()}K` : `$${Math.round(v).toLocaleString()}`;
+    const hn = Math.round(o.headNat * 100), bn = Math.round(o.benchNat * 100);
+    const bbB = B * o.benchNat, saB = B - bbB;
+    const ipt = Math.round(o.iptDays), rest = Math.max(Math.round((o.iptDays - s.dec) * 10) / 10, 0);
+    const rmn = B * o.retailLine, nat = B - rmn, off = B * o.offsitePts;
+
+    renderDots(s, o, animate);
+
+    // BIG IDEA: benefit + what. Answers the conflict, previews the resolution, no brand name.
+    const ideaText = `To grow sales today and tomorrow, build memory with the ${pOut(o.im)} before they shop, and win the ${pIm(o.im)} when they do.`;
+
+    // RESOLUTION: one diagram, two roles, each with its dollars, buyers, channel and tactics.
+    const hRes = `Put ${money(bbB)} into Brand Building and ${money(saB)} into Performance`;
+    // Ideal split: always starts at 60:40; step 2's out-of-market share sets where it can move.
+    const hiStart = o.oom >= 0.9, moveTo = hiStart ? bn + 10 : bn - 10;
+    // SEE-SAW: one view of the ideal split. Anchor at 60:40; step 2's out-of-market share sets the swing.
+    // Left = Performance, right = Brand Building. The heavier side sits lower, like a real see-saw.
+    // 90%+ out-of-market: swing toward Brand Building (70:30) while brand metrics grow.
+    // Under 90%: Performance can take more (toward 50:50).
+    // Anchor = the chosen sector's Binet & Field optimum (60:40 if none); the buyer split nudges it ±5 (±10 with no sector). Kept within Brand Building 30–85%.
+    const sw = s.sector ? 5 : 10, lean = Math.max(-1, Math.min(1, (o.oom - 0.9) / 0.1));
+    const endBB = Math.max(30, Math.min(85, bn + rHalf(sw * lean)));
+    const bbBook = off > 0 ? `National media ${money(nat)} · Retail media offsite ${money(off)}` : `National media ${money(bbB)}`;
+
+    $("whyNote").innerHTML =
+      `<p class="ev-lead">Les Binet &amp; Peter Field, <em>The Long and the Short of It</em>. The central finding:</p>` +
+      `<p class="ev-claim">The most effective campaigns overall allocate about<span class="ev-line"><span class="bb">60%</span> of the budget to Brand Building and <span class="sa">40%</span> to Sales Activation.</span></p>` +
+      `<p class="ev-src">Published by the IPA, 2013. Analysis of the IPA Effectiveness Databank, 1980–2010.</p>` +
+      "";
+
+    $("step1").textContent = `Interpurchase time = 365 days ÷ Purchase Frequency. With your data: 365 ÷ ${nf(s.catFreq)} = ${ipt} days between purchases, on average. Step 2 uses this to find the share in-market.`;
+    renderRef(s, o);
+    lastS = s; lastO = o; renderGap();
+    fixSvgVars(document.querySelector(".wrap"));
+
+  }
+
+  function run(animate) {
+    const s = read();
+    const bad = validate(s);
+    const st = $("status");
+    if (bad.length) { st.className = "status err"; st.textContent = "Check " + bad.join("; ") + "."; return false; }
+    renderResults(s, compute(s), animate);
+    lastKey = key(s);
+    document.querySelectorAll(".results").forEach(r => r.classList.remove("stale"));
+    $("staleBar").hidden = true;
+    const t = new Date();
+    $("runTag").textContent = isSample ? "Showing sample data. Enter your numbers in step 1 and click Calculate." : `Updated from your inputs at ${t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
+    st.className = "status";
+    st.textContent = isSample ? "Sample data loaded: illustrative numbers, not real brand data. Replace with your own." : "Updated. See step 2.";
+    return true;
+  }
+
+  function onInputChange(e) {
+    const s = read();
+    const ipt = s.catFreq > 0 ? 365 / s.catFreq : NaN;
+    $("iptCat").innerHTML = Number.isFinite(ipt) ? `Interpurchase time: <strong>every ${Math.round(ipt)} days</strong> (${fmt(ipt * 52 / 365)} weeks). How often a typical household buys the category. Calculated from your data (365 ÷ Purchase Frequency).` : "Interpurchase time: enter Purchase Frequency to calculate it.";
+    $("decNote").innerHTML = (Number.isFinite(ipt) && s.dec > 0) ? `Buyers buy every <strong>${Math.round(ipt)} days</strong> and decide over <strong>${dy(s.dec)}</strong>, so about <strong>${pIm(Math.min(s.dec / ipt, 1))}</strong> are in-market at any moment.` : "Enter a decision period and category Purchase Frequency.";
+    document.querySelectorAll("#decChips .chip").forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.d === s.dec)));
+    if (e && ["label", "catPen", "catFreq", "brandPen", "brandFreq"].includes(e.target.id)) isSample = false;
+    const changed = key(s) !== lastKey;
+    document.querySelectorAll(".results").forEach(r => r.classList.toggle("stale", changed));
+    $("staleBar").hidden = !changed;
+    const st = $("status");
+    st.className = "status";
+    st.textContent = changed ? "Inputs changed. Click Calculate to update the results." : "";
+  }
+
+  function simulateAndScroll() {
+    if (run(true)) {
+      document.dispatchEvent(new CustomEvent("calc:done"));
+      const target = $("step3");
+      try { target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }); } catch (err) { target.scrollIntoView(); }
+    }
+  }
+
+  function load(v) {
+    $("label").value = v.label; if (typeof markSector === "function") markSector(); $("catPen").value = v.catPen; $("catFreq").value = v.catFreq;
+    $("brandPen").value = v.brandPen; $("brandFreq").value = v.brandFreq; $("dec").value = v.dec;
+    isSample = true;
+    onInputChange();
+    run(true);
+  }
+
+
+  function markSector() {
+    const k = $("label").value;
+    document.querySelectorAll(".sx tr[data-sec]").forEach(r => r.classList.toggle("on", r.dataset.sec === k));
+    $("sxPick").textContent = k ? `Your sector, ${SECNAME[k]}, starts at ${SECTORS[k]}:${100 - SECTORS[k]}.` : "";
+    $("sxLead").hidden = !k;
+    $("prTease").textContent = k ? `Your sector, ${SECNAME[k]}, starts at ${SECTORS[k]}:${100 - SECTORS[k]}.` : "The most effective campaigns split about 60:40.";
+  }
+  $("label").addEventListener("change", markSector);
+  $("form").addEventListener("input", onInputChange);
+  $("form").addEventListener("change", onInputChange);
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); simulateAndScroll(); });
+  $("runBtn").addEventListener("click", simulateAndScroll);
+  $("form").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); simulateAndScroll(); } });
+  $("decChips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (!b) return; $("dec").value = b.dataset.d; onInputChange(); });
+  $("resetBtn").addEventListener("click", () => load(SAMPLE));
+  $("prTwo").addEventListener("toggle", (e) => { e.target.querySelector(".tog .sr").textContent = e.target.open ? "Hide the evidence" : "Show the evidence"; });
+  $("prOne").addEventListener("toggle", (e) => { e.target.querySelector(".tog .sr").textContent = e.target.open ? "Hide the principle" : "Show the principle"; if (e.target.open) { coneMode = ""; drawCone(); } });
+  $("howto").addEventListener("toggle", (e) => { e.target.querySelector(".tog").textContent = e.target.open ? "Hide method" : "Show method"; });
+
+  let coneMode = "";
+  function drawCone() {
+    const wrap = $("coneSvg").parentElement;
+    const mobile = (wrap.clientWidth || 800) < 560;
+    const mode = mobile ? "m" : "d";
+    if (mode === coneMode) return;
+    coneMode = mode;
+    const C = mobile
+      ? { W: 360, H: 500, cy: 340, x0: 16, xw: 112, x1: 336, hl: [9, 6], hr: [15, 70], ax: 454, nIn: 3, nOut: 26, rIn: 7, rOut: 6, gap: 14.5 }
+      : { W: 960, H: 400, cy: 215, x0: 40, xw: 300, x1: 900, hl: [16, 12], hr: [28, 92], ax: 368, nIn: 5, nOut: 56, rIn: 8, rOut: 7.5, gap: 19 };
+    const { cy, x0, xw, x1 } = C;
+    const h = (x) => x <= xw ? C.hl[0] + C.hl[1] * Math.pow((x - x0) / (xw - x0), 1.5) : C.hr[0] + C.hr[1] * Math.pow((x - xw) / (x1 - xw), 1.6);
+    let d = "";
+    const step = (x1 - x0) / 80;
+    // Drawn mirrored: out-of-market (wide) on the left, in-market (narrow) on the right, moving toward purchase.
+    const m = (x) => C.W - x;
+    for (let i = 0; i <= 80; i++) { const x = x0 + i * step; d += (i ? "L" : "M") + n1(m(x)) + "," + n1(cy - h(x)); }
+    for (let i = 80; i >= 0; i--) { const x = x0 + i * step; d += "L" + n1(m(x)) + "," + n1(cy + h(x)); }
+    d += "Z";
+    let seed = 11;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    let dots = "";
+    const fIn = [0.1, -0.55, 0.5, -0.15, 0.45];
+    for (let i = 0; i < C.nIn; i++) {
+      const x = x0 + (xw - x0) * (i + 0.6) / (C.nIn + 0.2);
+      dots += bagDot(m(x), cy + fIn[i] * h(x) * 0.6, C.rIn, "var(--instore)", (i * 380) % 1900);
+    }
+    const pts = []; let tries = 0;
+    while (pts.length < C.nOut && tries < 4000) {
+      tries++;
+      const x = xw + C.gap + (x1 - xw - 2 * C.gap) * Math.sqrt(rnd());
+      const y = cy + (rnd() * 2 - 1) * (h(x) - C.rOut * 1.8);
+      if (pts.some(q => Math.hypot(q[0] - x, q[1] - y) < C.gap)) continue;
+      pts.push([x, y]);
+    }
+    pts.forEach(([x, y], idx) => { dots += speakerDot(m(x), y, C.rOut, "var(--national)", (idx * 263) % 2600); });
+    const pill = (x, y, w, txt, col, fs) => `<rect x="${x}" y="${y}" width="${w}" height="${fs * 2.1}" rx="${fs * 1.05}" fill="var(--surface)" stroke="${col}" stroke-width="1.5"/><text x="${x + w / 2}" y="${y + fs * 1.45}" text-anchor="middle" font-size="${fs}" font-weight="600" fill="var(--ink)" font-family="var(--f-body)">${txt}</text>`;
+    const label = (x, y, col, title, sub, fsT, fsS) => `<circle cx="${x + 6}" cy="${y - fsT * 0.35}" r="6" fill="${col}"/><text x="${x + 20}" y="${y}" font-family="var(--f-display)" font-weight="700" font-size="${fsT}" fill="var(--ink)">${title}</text>` + [].concat(sub).map((ln, i) => `<text x="${x + 20}" y="${y + fsS * 1.6 + i * fsS * 1.35}" font-family="var(--f-body)" font-size="${fsS}" fill="var(--ink-2)">${ln}</text>`).join("");
+    const labels = mobile
+      ? label(14, 28, "var(--national)", "Out-of-Market Buyer", ["Buys the category, but isn't shopping right now."], 19, 14) + pill(34, 80, 210, "Activated by Brand Building", "var(--national)", 13.5) +
+        label(14, 154, "var(--instore)", "In-Market Buyer", ["Shopping the category right now", "and about to choose a brand."], 19, 14) + pill(34, 206, 300, "Activated by Performance (Sales Activation)", "var(--instore)", 13.5)
+      : label(56, 40, "var(--national)", "Out-of-Market Buyer", ["Buys the category, but isn't shopping right now."], 20, 13) + label(676, 40, "var(--instore)", "In-Market Buyer", ["Shopping the category right now", "and about to choose a brand."], 20, 13);
+    const fsA = mobile ? 13.5 : 12.5;
+    const svg = $("coneSvg");
+    svg.setAttribute("viewBox", `0 0 ${C.W} ${C.H}`);
+    svg.innerHTML = `
+      <defs><clipPath id="coneClip"><path d="${d}"/></clipPath></defs>
+      <rect x="${m(xw)}" y="0" width="${xw - x0}" height="${C.H}" fill="var(--band)" clip-path="url(#coneClip)"/>
+      <rect x="${m(x1)}" y="0" width="${x1 - xw}" height="${C.H}" fill="var(--band-blue)" clip-path="url(#coneClip)"/>
+      <path d="${d}" fill="none" stroke="var(--line)" stroke-width="1"/>
+      <line x1="${m(xw)}" y1="${mobile ? cy - 96 : 28}" x2="${m(xw)}" y2="${mobile ? C.ax - 6 : C.H}" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 4"/>
+      ${dots}
+      ${labels}
+      <line x1="${m(x1) - 20}" y1="${C.ax}" x2="${m(x0)}" y2="${C.ax}" stroke="var(--ink-2)" stroke-width="2"/>
+      <path d="M${m(x0)},${C.ax - 6} L${m(x0) + 10},${C.ax} L${m(x0)},${C.ax + 6} Z" fill="var(--ink-2)"/>
+      <g font-family="var(--f-body)" font-size="${fsA}" fill="var(--ink-3)">
+        <text x="${m(x1) - 20}" y="${C.ax + 22}">Not shopping yet</text>
+        <text x="${mobile ? m(xw) : m(xw) + 8}" y="${C.ax + 22}" text-anchor="${mobile ? "middle" : "start"}">${mobile ? "Deciding" : "Starts deciding"}</text>
+        <text x="${m(x0) + 10}" y="${C.ax + 22}" text-anchor="end">Buys</text>
+      </g>`;
+    fixSvgVars(svg.parentElement);
+  }
+  let coneTimer = null;
+  const redrawCone = () => { clearTimeout(coneTimer); coneTimer = setTimeout(drawCone, 120); };
+  window.addEventListener("resize", redrawCone);
+  try { if (window.ResizeObserver) new ResizeObserver(redrawCone).observe($("coneSvg").parentElement); } catch (err) {}
+
+  drawCone();
+  onInputChange();
+  run(false);
+})();
+</script>
+
+
+<script>
+(function () {
+  const host = document.getElementById("flowBg"), wrap = document.querySelector(".wrap");
+  if (!host || !wrap) return;
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const NS = "http://www.w3.org/2000/svg";
+  // 48x48 line icons
+  const ICON = {
+    eye: '<path d="M4 24 C11 13 18 10 24 10 S37 13 44 24 C37 35 30 38 24 38 S11 35 4 24 Z"/><circle cx="24" cy="24" r="6.5"/>',
+    megaphone: '<path d="M8 20 V29 H14 L32 38 V11 L14 20 Z"/><path d="M14 29 L17 40 H22 L20 31"/><path d="M37 19 C40 21 40 28 37 30"/>',
+    screen: '<rect x="6" y="9" width="36" height="25" rx="3"/><path d="M18 41 H30 M24 34 V41"/><path d="M21 16 V27 L30 21.5 Z"/>',
+    heart: '<path d="M24 40 C10 30 6 23 6 17 A9 9 0 0 1 24 13 A9 9 0 0 1 42 17 C42 23 38 30 24 40 Z"/>',
+    tag: '<path d="M7 24 L24 7 H41 V24 L24 41 Z"/><circle cx="33" cy="15" r="2.6"/>',
+    cart: '<path d="M5 9 H11 L16 31 H36 L40 15 H13"/><circle cx="19" cy="38" r="2.6"/><circle cx="33" cy="38" r="2.6"/>',
+    phone: '<rect x="15" y="4" width="18" height="40" rx="3.5"/><rect x="19" y="10" width="10" height="13" rx="1"/><rect x="19" y="30" width="10" height="6" rx="2"/>',
+    receipt: '<path d="M11 5 H37 V43 L33 40 L29 43 L25 40 L21 43 L17 40 L13 43 L11 41 Z"/><path d="M17 15 H31 M17 22 H31"/><path d="M17 31 L21 35 L30 27"/>'
+  };
+  const L_ICONS = ["eye", "megaphone", "screen", "heart"], R_ICONS = ["tag", "cart", "phone", "receipt"];
+  let lastKey = "";
+  const draw = () => {
+    const W = document.documentElement.clientWidth, H = Math.max(wrap.offsetTop + wrap.offsetHeight, window.innerHeight);
+    const key = W + "x" + H; if (key === lastKey) return; lastKey = key;
+    host.style.height = H + "px";
+    const content = Math.min(1080, W - 32), gut = (W - content) / 2;
+    if (gut < 56) { host.innerHTML = ""; return; }                  // no room: keep the page clean
+    const cx = W / 2, xl = gut / 2, xr = W - gut / 2, top = 15, y1 = 64, y2 = H - 110, yb = H - 44;
+    const pL = `M${cx - 12},${top} C${xl + 40},${top} ${xl},${top + 8} ${xl},${y1} L${xl},${y2} C${xl},${yb} ${cx - 120},${yb} ${cx},${yb}`;
+    const pR = `M${cx + 12},${top} C${xr - 40},${top} ${xr},${top + 8} ${xr},${y1} L${xr},${y2} C${xr},${yb} ${cx + 120},${yb} ${cx},${yb}`;
+    const showIcons = gut >= 110, showLabels = gut >= 110;
+    let s = `<defs><path id="fpL" d="${pL}"/><path id="fpR" d="${pR}"/></defs>`;
+    // ribbons: width 60:40 (Brand Building : Performance anchor)
+    s += `<use href="#fpL" fill="none" style="stroke:var(--national)" stroke-opacity=".10" stroke-width="12" stroke-linecap="round"/>`;
+    s += `<use href="#fpR" fill="none" style="stroke:var(--instore)" stroke-opacity=".10" stroke-width="8" stroke-linecap="round"/>`;
+    s += `<use href="#fpL" fill="none" style="stroke:var(--national)" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 7" stroke-linecap="round"/>`;
+    s += `<use href="#fpR" fill="none" style="stroke:var(--instore)" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 7" stroke-linecap="round"/>`;
+    // the budget
+    s += `<circle cx="${cx}" cy="${top}" r="11" style="fill:var(--bg);stroke:var(--ink-3)" stroke-opacity=".55" stroke-width="1.4"/>` +
+         `<text x="${cx}" y="${top + 4.5}" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--ink-3)" fill-opacity=".75" font-family="-apple-system,BlinkMacSystemFont,sans-serif">$</text>`;
+    // growth at the bottom
+    s += `<path d="M${cx},${yb + 10} V${yb - 26} M${cx - 8},${yb - 18} L${cx},${yb - 27} L${cx + 8},${yb - 18}" fill="none" style="stroke:var(--ink-3)" stroke-opacity=".55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<text x="${cx}" y="${yb + 24}" text-anchor="middle" font-size="10.5" font-weight="700" letter-spacing="1.4" style="fill:var(--ink-3)" fill-opacity=".7" font-family="-apple-system,BlinkMacSystemFont,sans-serif">GROWTH</text>`;
+    if (showLabels) {
+      const lab = (x, txt, col) => `<text x="${x}" y="${y1 + 30}" text-anchor="middle" font-size="10.5" font-weight="700" letter-spacing="1.4" style="fill:var(${col})" fill-opacity=".6" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${txt}</text>`;
+      s += `<rect x="${xl - 52}" y="${y1 + 17}" width="104" height="18" rx="9" style="fill:var(--bg)"/>` + lab(xl, "AWARENESS", "--national");
+      s += `<rect x="${xr - 48}" y="${y1 + 17}" width="96" height="18" rx="9" style="fill:var(--bg)"/>` + lab(xr, "PURCHASE", "--instore");
+    }
+    if (showIcons) {
+      const step = 520, n = Math.floor((y2 - (y1 + 140)) / step);
+      for (let k = 0; k <= n; k++) {
+        const y = y1 + 170 + k * step;
+        const ic = (x, name, col) => `<circle cx="${x}" cy="${y}" r="22" style="fill:var(--bg);stroke:var(${col})" stroke-opacity=".28" stroke-width="1.2"/>` +
+          `<g transform="translate(${x - 13} ${y - 13}) scale(.54)" fill="none" style="stroke:var(${col})" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</g>`;
+        s += ic(xl, L_ICONS[k % 4], "--national") + ic(xr, R_ICONS[k % 4], "--instore");
+      }
+    }
+    // budget flowing: coins drift down each stream (60:40 by count too)
+    if (!still) {
+      const len = 2 * (y2 - y1) + gut + W, dur = Math.max(40, len / 28);
+      const coins = (id, col, count, r) => { let c = ""; for (let k = 0; k < count; k++) c += `<circle r="${r}" style="fill:var(${col})" fill-opacity=".45"><animateMotion dur="${dur}s" begin="-${(dur * k / count).toFixed(1)}s" repeatCount="indefinite"><mpath href="#${id}"/></animateMotion></circle>`; return c; };
+      const per = Math.max(3, Math.round(H / 420));
+      s += coins("fpL", "--national", Math.round(per * 1.5), 3.4) + coins("fpR", "--instore", per, 3.4);
+    }
+    host.innerHTML = `<svg xmlns="${NS}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${s}</svg>`;
+  };
+  let raf = 0; const queue = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
+  window.addEventListener("resize", queue);
+  if ("ResizeObserver" in window) new ResizeObserver(queue).observe(wrap);
+  draw(); setTimeout(queue, 600);
+})();
+</script>
+
+<script>
+(function () {
+  const bar = document.getElementById("crumbs"), map = document.querySelector(".roadmap");
+  if (!bar) return;
+  bar.hidden = false;
+  const items = [...bar.querySelectorAll("li[data-c]")];
+  const secs = [...document.querySelectorAll("section[data-step]")];
+  // Show the bar once the in-page roadmap has scrolled out of view.
+  if (map && "IntersectionObserver" in window) {
+    new IntersectionObserver(([e]) => {
+      const past = !e.isIntersecting && e.boundingClientRect.top < 0;
+      bar.classList.toggle("show", past); bar.setAttribute("aria-hidden", String(!past));
+    }).observe(map);
+  } else bar.classList.add("show");
+  // Highlight the step being read: the last step section whose top has passed the bar.
+  const spy = () => {
+    let cur = 1;
+    for (const s of secs) if (s.getBoundingClientRect().top < 140) cur = +s.dataset.step;
+    items.forEach(li => { const on = +li.dataset.c === cur; li.classList.toggle("on", on); const a = li.querySelector("a"); if (on) a.setAttribute("aria-current", "step"); else a.removeAttribute("aria-current"); });
+  };
+
+  let tick = false;
+  window.addEventListener("scroll", () => { if (!tick) { tick = true; requestAnimationFrame(() => { spy(); tick = false; }); } }, { passive: true });
+  window.addEventListener("resize", spy);
+  spy();
+  // After the user clicks Calculate, steps 1 and 2 are done.
+  document.addEventListener("calc:done", () => { items.forEach(li => { if (+li.dataset.c <= 2) li.classList.add("done"); }); });
+})();
+</script>
+
+</body></html>
